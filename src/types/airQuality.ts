@@ -88,3 +88,56 @@ export interface WeatherData {
   precipitation: number;
   conditions: string;
 }
+
+// Card Data Structures
+export interface HealthAlertCardData {
+  rawData: {
+    alert: HealthAlert;
+    timestamp: Date;
+  };
+  summary: {
+    severity: AlertSeverity;
+    title: string;
+    affectedGroupsCount: number;
+    recommendationsCount: number;
+  };
+}
+
+export interface ForecastCardData {
+  rawData: {
+    forecasts: ForecastItem[];
+    location: Location;
+    generatedAt: Date;
+  };
+  summary: {
+    peakAQI: number;
+    lowestAQI: number;
+    averageAQI: number;
+    trend: 'improving' | 'worsening' | 'stable';
+  };
+}
+
+export interface WeatherCardData {
+  rawData: {
+    weather: WeatherData;
+  };
+  summary: {
+    temperature: number;
+    conditions: string;
+    windSpeed: number;
+    humidity: number;
+  };
+}
+
+export interface HistoricalTrendCardData {
+  rawData: {
+    readings: AQIReading[];
+    period: '24h' | '7d' | '30d';
+  };
+  summary: {
+    averageAQI: number;
+    minAQI: number;
+    maxAQI: number;
+    dataPoints: number;
+  };
+}

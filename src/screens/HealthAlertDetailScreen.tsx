@@ -36,27 +36,12 @@ export default function HealthAlertDetailScreen() {
 
   const config = severityConfig[alert.severity];
 
-  const protectiveMeasures = [
-    {
-      title: 'Stay Indoors',
-      description: 'Keep windows and doors closed. Use air conditioning if available.',
-      icon: '🏠',
-    },
-    {
-      title: 'Avoid Exercise',
-      description: 'Limit strenuous outdoor activities during high pollution periods.',
-      icon: '🏃',
-    },
-    {
-      title: 'Use Protection',
-      description: 'Wear N95 masks when outdoor exposure is unavoidable.',
-      icon: '😷',
-    },
-    {
-      title: 'Monitor Health',
-      description: 'Watch for symptoms like coughing, shortness of breath, or chest tightness.',
-      icon: '❤️',
-    },
+  const proactiveMeasures = [
+    'Keep windows and doors closed during high pollution periods',
+    'Use air purifiers indoors if available',
+    'Limit strenuous outdoor activities',
+    'Wear N95 masks when outdoor exposure is unavoidable',
+    'Monitor air quality before planning outdoor activities',
   ];
 
   return (
@@ -95,28 +80,14 @@ export default function HealthAlertDetailScreen() {
         </Card>
 
         {/* Recommendations */}
-        <Text style={styles.sectionTitle}>RECOMMENDATIONS</Text>
-        {alert.recommendations.map((rec, index) => (
+        <Text style={styles.sectionTitle}>PROACTIVE MEASURES</Text>
+        {proactiveMeasures.map((measure, index) => (
           <Card key={index} variant="elevated" style={styles.recCard}>
             <CardContent style={styles.recContent}>
               <View style={styles.recNumber}>
                 <Text style={styles.recNumberText}>{index + 1}</Text>
               </View>
-              <Text style={styles.recText}>{rec}</Text>
-            </CardContent>
-          </Card>
-        ))}
-
-        {/* Protective Measures */}
-        <Text style={styles.sectionTitle}>PROTECTIVE MEASURES</Text>
-        {protectiveMeasures.map((measure, index) => (
-          <Card key={index} variant="elevated" style={styles.card}>
-            <CardContent style={styles.cardContent}>
-              <View style={styles.measureHeader}>
-                <Text style={styles.measureIcon}>{measure.icon}</Text>
-                <Text style={styles.measureTitle}>{measure.title}</Text>
-              </View>
-              <Text style={styles.measureDesc}>{measure.description}</Text>
+              <Text style={styles.recText}>{measure}</Text>
             </CardContent>
           </Card>
         ))}
@@ -140,30 +111,7 @@ export default function HealthAlertDetailScreen() {
           </CardContent>
         </Card>
 
-        {/* Additional Resources */}
-        <Text style={styles.sectionTitle}>RESOURCES</Text>
-        <Card variant="elevated" style={styles.card}>
-          <CardContent style={styles.cardContent}>
-            <TouchableOpacity style={styles.resourceLink}>
-              <Text style={styles.resourceText}>EPA Air Quality Guide</Text>
-              <Text style={styles.resourceArrow}>→</Text>
-            </TouchableOpacity>
-            <View style={styles.resourceDivider} />
-            <TouchableOpacity style={styles.resourceLink}>
-              <Text style={styles.resourceText}>CDC Health Guidelines</Text>
-              <Text style={styles.resourceArrow}>→</Text>
-            </TouchableOpacity>
-            <View style={styles.resourceDivider} />
-            <TouchableOpacity style={styles.resourceLink}>
-              <Text style={styles.resourceText}>Find Air Purifiers</Text>
-              <Text style={styles.resourceArrow}>→</Text>
-            </TouchableOpacity>
-          </CardContent>
-        </Card>
-
-        <Text style={styles.footer}>
-          Stay informed and stay safe
-        </Text>
+        <View style={{ marginBottom: theme.spacing.xxl }} />
       </ScrollView>
     </View>
   );
@@ -308,26 +256,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   cardContent: {
     paddingVertical: theme.spacing.xl,
   },
-  measureHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: theme.spacing.md,
-    gap: theme.spacing.md,
-  },
-  measureIcon: {
-    fontSize: 24,
-  },
-  measureTitle: {
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.primary,
-  },
-  measureDesc: {
-    fontSize: theme.typography.sizes.sm,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.secondary,
-    lineHeight: theme.typography.sizes.sm * 1.5,
-  },
   helpTitle: {
     fontSize: theme.typography.sizes.base,
     fontWeight: theme.typography.weights.bold,
@@ -353,33 +281,5 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     fontSize: theme.typography.sizes.base,
     fontWeight: theme.typography.weights.bold,
     color: '#FFFFFF',
-  },
-  resourceLink: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: theme.spacing.md,
-  },
-  resourceText: {
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.primary,
-  },
-  resourceArrow: {
-    fontSize: theme.typography.sizes.lg,
-    fontWeight: theme.typography.weights.light,
-    color: theme.colors.text.tertiary,
-  },
-  resourceDivider: {
-    height: 1,
-    backgroundColor: theme.colors.border.light,
-  },
-  footer: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.muted,
-    textAlign: 'center',
-    marginTop: theme.spacing.xl,
-    marginBottom: theme.spacing.xxl,
   },
 });

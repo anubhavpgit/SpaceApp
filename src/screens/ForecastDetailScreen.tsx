@@ -42,25 +42,18 @@ export default function ForecastDetailScreen() {
         <Text style={styles.sectionTitle}>HOURLY BREAKDOWN</Text>
         {forecasts.map((forecast, index) => {
           const color = getAQIColor(forecast.category);
-          const label = getAQILabel(forecast.category);
 
           return (
             <Card key={index} variant="elevated" style={styles.forecastCard}>
               <CardContent style={styles.forecastContent}>
                 <View style={styles.forecastHeader}>
-                  <View>
-                    <Text style={styles.forecastTime}>
-                      {new Date(forecast.timestamp).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
-                    </Text>
-                    <Text style={styles.forecastLabel}>{label}</Text>
-                  </View>
-                  <View style={styles.forecastValueContainer}>
-                    <Text style={styles.forecastValue}>{forecast.aqi}</Text>
-                    <Text style={styles.forecastUnit}>AQI</Text>
-                  </View>
+                  <Text style={styles.forecastTime}>
+                    {new Date(forecast.timestamp).toLocaleTimeString('en-US', {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
+                  </Text>
+                  <Text style={styles.forecastValue}>{forecast.aqi}</Text>
                 </View>
 
                 <View style={styles.forecastBar}>
@@ -73,27 +66,6 @@ export default function ForecastDetailScreen() {
                       },
                     ]}
                   />
-                </View>
-
-                <View style={styles.forecastDetails}>
-                  <View style={styles.forecastDetailItem}>
-                    <Text style={styles.forecastDetailLabel}>Temp</Text>
-                    <Text style={styles.forecastDetailValue}>
-                      {Math.round(forecast.temperature)}°
-                    </Text>
-                  </View>
-                  <View style={styles.forecastDetailItem}>
-                    <Text style={styles.forecastDetailLabel}>Wind</Text>
-                    <Text style={styles.forecastDetailValue}>
-                      {Math.round(forecast.windSpeed)} km/h
-                    </Text>
-                  </View>
-                  <View style={styles.forecastDetailItem}>
-                    <Text style={styles.forecastDetailLabel}>Humidity</Text>
-                    <Text style={styles.forecastDetailValue}>
-                      {Math.round(forecast.humidity)}%
-                    </Text>
-                  </View>
                 </View>
               </CardContent>
             </Card>
@@ -202,63 +174,28 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   forecastHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: theme.spacing.md,
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
   },
   forecastTime: {
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.primary,
-    marginBottom: 2,
-  },
-  forecastLabel: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.tertiary,
-  },
-  forecastValueContainer: {
-    alignItems: 'flex-end',
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.secondary,
   },
   forecastValue: {
-    fontSize: 32,
+    fontSize: theme.typography.sizes.xl,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text.primary,
-    letterSpacing: -1,
-    lineHeight: 32,
-  },
-  forecastUnit: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.tertiary,
   },
   forecastBar: {
     height: 6,
     backgroundColor: theme.colors.overlay.medium,
     borderRadius: 3,
     overflow: 'hidden',
-    marginBottom: theme.spacing.lg,
   },
   forecastBarFill: {
     height: '100%',
     borderRadius: 3,
-  },
-  forecastDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-  },
-  forecastDetailItem: {
-    alignItems: 'center',
-  },
-  forecastDetailLabel: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.tertiary,
-    marginBottom: 2,
-  },
-  forecastDetailValue: {
-    fontSize: theme.typography.sizes.sm,
-    fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.text.primary,
   },
   card: {
     marginBottom: theme.spacing.lg,

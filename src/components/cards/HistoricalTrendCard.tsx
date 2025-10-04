@@ -61,12 +61,12 @@ export const HistoricalTrendCard: React.FC<HistoricalTrendCardProps> = ({
         {/* Compact Stats */}
         <View style={styles.stats}>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{avgAQI}</Text>
             <Text style={styles.statLabel}>Avg</Text>
+            <Text style={styles.statValue}>{avgAQI}</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statValue}>{minAQI}-{maxAQI}</Text>
             <Text style={styles.statLabel}>Range</Text>
+            <Text style={styles.statValue}>{minAQI}-{maxAQI}</Text>
           </View>
         </View>
       </CardContent>
@@ -111,16 +111,18 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   statItem: {
     alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  statLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.tertiary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   statValue: {
     fontSize: theme.typography.sizes.xl,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
-  },
-  statLabel: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.tertiary,
   },
 });
