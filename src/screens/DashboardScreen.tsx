@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../contexts/LocationContext';
 import { useTheme } from '../hooks/useTheme';
+import { useDashboardData } from '../hooks/useDashboardData';
 import { ScrubbingTimeline } from '../components/ui/ScrubbingTimeline';
 import { HealthAlertCard } from '../components/cards/HealthAlertCard';
 import { HistoricalTrendCard } from '../components/cards/HistoricalTrendCard';
 import { WeatherCompactCard } from '../components/cards/WeatherCompactCard';
 import { AirQualityCompactCard } from '../components/cards/AirQualityCompactCard';
 import { Card, CardContent } from '../components/ui/Card';
-import {
-  MOCK_CURRENT_AQI,
-  MOCK_FORECAST,
-  MOCK_HEALTH_ALERTS,
-  MOCK_WEATHER,
-  MOCK_HISTORICAL_DATA,
-} from '../api/mock/airQualityData';
 import { ForecastItem } from '../types/airQuality';
 
 export default function DashboardScreen() {
@@ -24,13 +18,71 @@ export default function DashboardScreen() {
   const navigation = useNavigation();
   const { location } = useLocation();
   const theme = useTheme();
+  const { data, loading, error, refetch, lastUpdated } = useDashboardData();
   const [selectedForecast, setSelectedForecast] = useState<ForecastItem | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  console.log('[DashboardScreen] Render state:', {
+    locationLoading: location.isLoading,
+    dataLoading: loading,
+    hasData: !!data,
+    hasError: !!error,
+    lat: location.latitude,
+    lon: location.longitude,
+  });
 
   const handleForecastScrub = (forecast: ForecastItem) => {
     setSelectedForecast(forecast);
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
   const styles = createStyles(theme);
+
+  // Loading state
+  if (loading && !data) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={theme.colors.text.primary} />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // Error state
+  if (error && !data) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorTitle}>Unable to load data</Text>
+        <Text style={styles.errorMessage}>
+          {error.message || 'An unexpected error occurred'}
+        </Text>
+        <Text style={styles.errorDetails}>
+          Please check your internet connection and try again
+        </Text>
+        <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // No data state
+  if (!data) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorTitle}>No data available</Text>
+        <Text style={styles.errorMessage}>Unable to fetch air quality information</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -44,13 +96,29 @@ export default function DashboardScreen() {
           },
         ]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.text.primary}
+          />
+        }
       >
+        {/* Location Permission Notice */}
+        {location.error && (
+          <View style={styles.locationNotice}>
+            <Text style={styles.locationNoticeText}>{location.error}</Text>
+          </View>
+        )}
+
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <Text style={styles.location}>{location.city}</Text>
-            <Text style={styles.headerTitle}>{MOCK_CURRENT_AQI.aqi}</Text>
-            <Text style={styles.category}>{MOCK_CURRENT_AQI.category.replace('-', ' ').toUpperCase()}</Text>
+            <Text style={styles.location}>{location.city || 'Unknown Location'}</Text>
+            <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
+            <Text style={styles.category}>
+              {data.currentAQI?.category?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.menuButton}
@@ -61,38 +129,44 @@ export default function DashboardScreen() {
         </View>
 
         {/* Health Alerts - Compact */}
-        {MOCK_HEALTH_ALERTS.map((alert) => (
+        {data.healthAlerts && data.healthAlerts.length > 0 && data.healthAlerts.map((alert) => (
           <HealthAlertCard key={alert.id} alert={alert} />
         ))}
 
         {/* 24-Hour Forecast */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => navigation.navigate('ForecastDetail' as never)}
-        >
-          <Card variant="elevated" style={styles.forecastCard}>
-            <CardContent style={styles.forecastContent}>
-              <Text style={styles.cardLabel}>24-HOUR FORECAST</Text>
-              <ScrubbingTimeline
-                forecasts={MOCK_FORECAST.forecasts}
-                onScrub={handleForecastScrub}
-              />
-            </CardContent>
-          </Card>
-        </TouchableOpacity>
+        {data.forecast?.forecasts && data.forecast.forecasts.length > 0 && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('ForecastDetail' as never)}
+          >
+            <Card variant="elevated" style={styles.forecastCard}>
+              <CardContent style={styles.forecastContent}>
+                <Text style={styles.cardLabel}>24-HOUR FORECAST</Text>
+                <ScrubbingTimeline
+                  forecasts={data.forecast.forecasts}
+                  onScrub={handleForecastScrub}
+                />
+              </CardContent>
+            </Card>
+          </TouchableOpacity>
+        )}
 
         {/* Grid: Weather + Air Quality */}
-        <View style={styles.grid}>
-          <WeatherCompactCard weather={MOCK_WEATHER} />
-          <AirQualityCompactCard pollutants={MOCK_CURRENT_AQI.pollutants} />
-        </View>
+        {data.weather && data.currentAQI?.pollutants && (
+          <View style={styles.grid}>
+            <WeatherCompactCard weather={data.weather} />
+            <AirQualityCompactCard pollutants={data.currentAQI.pollutants} />
+          </View>
+        )}
 
         {/* Historical Trends */}
-        <HistoricalTrendCard readings={MOCK_HISTORICAL_DATA} period="7d" />
+        {data.historicalReadings && data.historicalReadings.length > 0 && (
+          <HistoricalTrendCard readings={data.historicalReadings} period="7d" />
+        )}
 
         {/* Footer */}
         <Text style={styles.footerText}>
-          NASA TEMPO • Last updated {new Date().toLocaleTimeString()}
+          NASA TEMPO • Last updated {lastUpdated?.toLocaleTimeString() || 'Loading...'}
         </Text>
       </ScrollView>
     </View>
@@ -104,11 +178,69 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background.primary,
   },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+  },
+  loadingText: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing.lg,
+  },
+  errorTitle: {
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+  },
+  errorDetails: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.tertiary,
+    marginBottom: theme.spacing.xl,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: theme.colors.text.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.borderRadius.md,
+  },
+  retryButtonText: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.inverse,
+  },
   scrollView: {
     flex: 1,
   },
   content: {
     paddingHorizontal: theme.spacing.lg,
+  },
+  locationNotice: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    borderRadius: theme.borderRadius.sm,
+  },
+  locationNoticeText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
   },
   header: {
     flexDirection: 'row',

@@ -1,62 +1,164 @@
 /**
  * Location Service
- *
- * This service handles location detection on app start.
- * Currently uses mock data, but will integrate with backend API
- * to process location information and determine the current location.
+ * Handles device location permissions and fetching
  */
 
-interface LocationResult {
-  city?: string;
-  region?: string;
-  country?: string;
-  displayName: string;
+import Geolocation from '@react-native-community/geolocation';
+import { Platform, PermissionsAndroid } from 'react-native';
+
+export interface LocationCoordinates {
+  latitude: number;
+  longitude: number;
+  accuracy?: number;
 }
 
-/**
- * Simulates getting location from device and processing it through backend
- *
- * In production, this will:
- * 1. Get device coordinates using expo-location or native modules
- * 2. Send coordinates to backend API
- * 3. Backend processes location and returns formatted location data
- * 4. Update global context with the location
- */
-export const fetchCurrentLocation = async (): Promise<LocationResult> => {
-  // Simulate async operation (backend call)
-  await new Promise(resolve => setTimeout(resolve, 1000));
+export interface LocationError {
+  code: number;
+  message: string;
+}
 
-  // Mock location data - replace with actual API call to backend
-  // Backend will process coordinates and return location information
-  const mockLocation: LocationResult = {
-    city: 'San Francisco',
-    region: 'California',
-    country: 'USA',
-    displayName: 'San Francisco, CA',
-  };
+class LocationService {
+  private permissionRequested = false;
+  private permissionGranted = false;
 
-  return mockLocation;
-};
+  /**
+   * Request location permissions
+   */
+  async requestPermission(): Promise<boolean> {
+    // Don't request again if already requested
+    if (this.permissionRequested) {
+      console.log('[LocationService] Permission already requested, returning cached result');
+      return this.permissionGranted;
+    }
 
-/**
- * Placeholder for future backend integration
- * This will send location coordinates to the backend
- *
- * @param latitude - Device latitude
- * @param longitude - Device longitude
- * @returns Processed location information from backend
- */
-export const sendLocationToBackend = async (
-  latitude: number,
-  longitude: number
-): Promise<LocationResult> => {
-  // TODO: Implement actual backend API call
-  // const response = await fetch('YOUR_BACKEND_URL/api/location', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify({ latitude, longitude }),
-  // });
-  // return await response.json();
+    this.permissionRequested = true;
 
-  return fetchCurrentLocation();
-};
+    if (Platform.OS === 'ios') {
+      // iOS permissions are requested automatically
+      this.permissionGranted = true;
+      return true;
+    }
+
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message: 'This app needs access to your location to provide accurate air quality data for your area.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+
+        this.permissionGranted = granted === PermissionsAndroid.RESULTS.GRANTED;
+        return this.permissionGranted;
+      } catch (err) {
+        console.error('[LocationService] Permission request error:', err);
+        this.permissionGranted = false;
+        return false;
+      }
+    }
+
+    this.permissionGranted = false;
+    return false;
+  }
+
+  /**
+   * Check if location permissions are granted
+   */
+  async hasPermission(): Promise<boolean> {
+    if (Platform.OS === 'ios') {
+      // On iOS, we'll just try to get the location and handle errors
+      return true;
+    }
+
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+        );
+        return granted;
+      } catch (err) {
+        console.error('[LocationService] Permission check error:', err);
+        return false;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Get current device location - ONE ATTEMPT ONLY
+   */
+  async getCurrentLocation(): Promise<LocationCoordinates> {
+    console.log('[LocationService] Getting current location (ONE ATTEMPT)...');
+    const startTime = Date.now();
+
+    // Check permissions first
+    const hasPermission = await this.hasPermission();
+    if (!hasPermission) {
+      console.log('[LocationService] No permission, requesting...');
+      const granted = await this.requestPermission();
+      if (!granted) {
+        console.error('[LocationService] Permission denied by user');
+        throw new Error('Location permission denied');
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      console.log('[LocationService] Calling Geolocation.getCurrentPosition...');
+      console.log(`[LocationService] Started at ${new Date().toISOString()}`);
+
+      Geolocation.getCurrentPosition(
+        (position) => {
+          const elapsed = Date.now() - startTime;
+          console.log(`[LocationService] SUCCESS - Location retrieved (took ${elapsed}ms):`, {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+        },
+        (error) => {
+          const elapsed = Date.now() - startTime;
+          console.error(`[LocationService] FAILED after ${elapsed}ms - Error code:`, error.code, 'Message:', error.message);
+          reject({
+            code: error.code,
+            message: this.getErrorMessage(error.code),
+          });
+        },
+        {
+          enableHighAccuracy: false, // Use lower accuracy for faster response
+          timeout: 10000, // 10 second timeout
+          maximumAge: 0, // Don't use cached location
+        }
+      );
+    });
+  }
+
+  /**
+   * Get user-friendly error message
+   */
+  private getErrorMessage(code: number): string {
+    switch (code) {
+      case 1: // PERMISSION_DENIED
+        return 'Location permission denied. Please enable location services in your device settings.';
+      case 2: // POSITION_UNAVAILABLE
+        return 'Unable to determine your location. Please check your GPS settings.';
+      case 3: // TIMEOUT
+        return 'Location request timed out. Please try again.';
+      default:
+        return 'An error occurred while getting your location.';
+    }
+  }
+}
+
+// Export singleton instance
+export const locationService = new LocationService();
