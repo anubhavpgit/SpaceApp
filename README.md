@@ -1,4 +1,55 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Air Quality Forecasting App 🌍
+
+A React Native mobile application that provides real-time air quality monitoring and forecasting using NASA TEMPO satellite data, ground-based sensors, and weather information.
+
+Built for **NASA Space Apps Challenge 2025** to help people limit their exposure to unhealthy levels of air pollution.
+
+## Features ✨
+
+- **Real-time Air Quality Monitoring**: Current AQI with location-based data
+- **24-Hour Forecasts**: Hourly air quality predictions
+- **Health Alerts**: Personalized warnings for sensitive groups
+- **Pollutant Tracking**: Monitor PM2.5, PM10, O3, NO2, SO2, and CO levels
+- **Visual Smoke Effects**: Realistic pollution visualization
+- **Interactive Globe**: 3D Earth visualization
+
+## Project Structure 📁
+
+```
+/src
+├── /screens              # Screen components
+│   └── DashboardScreen   # Main dashboard
+├── /components           # Reusable components
+│   ├── /cards           # Card components (AQI, Pollutant, Forecast, etc.)
+│   ├── /ui              # Base UI components
+│   └── /pollution       # Smoke/pollution visualizations
+├── /api                 # API layer
+│   └── /mock            # Mock data (to be replaced with real APIs)
+├── /types               # TypeScript types
+├── /constants           # App constants (AQI, theme)
+└── /services            # Business logic (coming soon)
+```
+
+## Design System 🎨
+
+The app uses a minimal, black and white design inspired by **Notion** and **Linear**:
+
+- **Colors**: Monochromatic palette with subtle borders
+- **Typography**: Light font weights (300-400) for clean look
+- **Components**: Card-based UI with consistent spacing
+- **Animations**: Smooth smoke overlays for pollution visualization
+
+## Architecture 🏗️
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed technical architecture and design decisions from a principal engineer's perspective.
+
+## Mock Data 📊
+
+Currently using mock data located in `/src/api/mock/airQualityData.ts`. This will be replaced with real API integrations for:
+
+- **NASA TEMPO**: Satellite air quality data
+- **OpenAQ**: Ground-based air quality measurements
+- **Weather APIs**: OpenWeather/NOAA data
 
 # Getting Started
 
