@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
-import { useDashboardData } from '../hooks/useDashboardData';
 import { Card, CardContent } from '../components/ui/Card';
 import { POLLUTANT_INFO } from '../constants/aqi';
 import { Pollutants } from '../types/airQuality';
@@ -11,21 +10,20 @@ import { Pollutants } from '../types/airQuality';
 export default function AirQualityDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const route = useRoute();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { data, loading } = useDashboardData();
+  const { currentAQI, dataSources } = route.params as any;
 
-  if (loading || !data) {
+  if (!currentAQI) {
     return (
       <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color={theme.colors.text.primary} />
+        <Text style={styles.emptyText}>No data available</Text>
       </View>
     );
   }
 
-  const pollutants = data.currentAQI.pollutants;
-  const currentAQI = data.currentAQI;
-  const dataSources = data.dataSources;
+  const pollutants = currentAQI.pollutants;
   const pollutantEntries = Object.entries(pollutants) as Array<[keyof Pollutants, number]>;
 
   console.log('[AirQualityDetailScreen] Data:', {
@@ -199,6 +197,11 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
   },
   header: {
     flexDirection: 'row',

@@ -1,22 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
-import { useDashboardData } from '../hooks/useDashboardData';
+import { useLocation } from '../contexts/LocationContext';
+import { airQualityAPI } from '../api/client';
 import { Card, CardContent } from '../components/ui/Card';
 import { getAQIColor } from '../constants/aqi';
+import { AQIReading } from '../types/airQuality';
 
 export default function HistoricalDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const route = useRoute();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { data, loading } = useDashboardData();
+  const { location } = useLocation();
+  const { readings: initialReadings, initialPeriod } = route.params as any;
 
-  const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>('7d');
+  const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>(initialPeriod || '7d');
+  const [loading, setLoading] = useState(false);
+  const [historicalData, setHistoricalData] = useState<{
+    readings: AQIReading[];
+    statistics?: any;
+  } | null>(initialReadings ? { readings: initialReadings } : null);
 
-  if (loading || !data) {
+  // Only fetch new data when period changes from initial
+  useEffect(() => {
+    // Don't fetch on initial load if we have initial readings and period matches
+    if (selectedPeriod === initialPeriod && initialReadings) {
+      return;
+    }
+
+    const fetchHistoricalData = async () => {
+      if (!location.latitude || !location.longitude) return;
+
+      setLoading(true);
+      try {
+        const response = await airQualityAPI.post<{
+          success: boolean;
+          data: {
+            readings: any[];
+            statistics: any;
+          };
+        }>('/api/historical', {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          period: selectedPeriod,
+        });
+
+        console.log('[HistoricalDetail] API Response:', response);
+
+        if (response.success && response.data) {
+          // Transform readings to ensure they have required fields
+          const data = response.data;
+          const readings = (data.readings || []).map((reading: any) => ({
+            ...reading,
+            timestamp: new Date(reading.timestamp),
+            location: {
+              latitude: location.latitude || 0,
+              longitude: location.longitude || 0,
+              city: location.city,
+              country: location.country,
+              displayName: location.city || 'Unknown',
+              timezone: 'UTC',
+            },
+            source: 'aggregated' as const,
+            confidence: 0.9,
+          }));
+
+          setHistoricalData({
+            readings,
+            statistics: data.statistics,
+          });
+        }
+      } catch (error: any) {
+        console.error('[HistoricalDetail] Error fetching historical data:', error);
+        console.error('[HistoricalDetail] Error details:', error.response?.data || error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistoricalData();
+  }, [selectedPeriod, location.latitude, location.longitude, initialPeriod, initialReadings]);
+
+  if (loading || !historicalData) {
     return (
       <View style={[styles.container, styles.centerContent]}>
         <ActivityIndicator size="large" color={theme.colors.text.primary} />
@@ -24,11 +93,9 @@ export default function HistoricalDetailScreen() {
     );
   }
 
-  // For now, use the available data
-  // TODO: Fetch data for selected period from API
-  const allReadings = data.historicalReadings;
+  const readings = historicalData.readings;
 
-  if (!allReadings || allReadings.length === 0) {
+  if (!readings || readings.length === 0) {
     return (
       <View style={[styles.container, styles.centerContent]}>
         <Text style={styles.emptyText}>No historical data available</Text>
@@ -36,33 +103,27 @@ export default function HistoricalDetailScreen() {
     );
   }
 
-  // Use all available readings (API now returns daily data)
-  // The API should be updated to return 7, 30, or 90 days based on request
-  const readings = allReadings;
+  const aqiValues = readings.map(r => r?.aqi || 0).filter(aqi => aqi > 0);
 
-  if (readings.length === 0) {
+  if (aqiValues.length === 0) {
     return (
       <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.emptyText}>No data available for selected period</Text>
+        <Text style={styles.emptyText}>Invalid historical data</Text>
       </View>
     );
   }
 
-  const aqiValues = readings.map(r => r.aqi);
-  const avgAQI = Math.round(aqiValues.reduce((a, b) => a + b, 0) / aqiValues.length);
-  const maxAQI = Math.max(...aqiValues);
-  const minAQI = Math.min(...aqiValues);
+  const avgAQI = historicalData.statistics?.average || Math.round(aqiValues.reduce((a, b) => a + b, 0) / aqiValues.length);
+  const maxAQI = historicalData.statistics?.max || Math.max(...aqiValues);
+  const minAQI = historicalData.statistics?.min || Math.min(...aqiValues);
 
-  // Calculate trend
-  const firstHalf = aqiValues.slice(0, Math.floor(aqiValues.length / 2));
-  const secondHalf = aqiValues.slice(Math.floor(aqiValues.length / 2));
-  const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
-  const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-  const trendPercent = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0;
-  const isImproving = trendPercent < 0;
+  // Use statistics from API if available
+  const trendPercent = historicalData.statistics?.trend?.percentage || 0;
+  const isImproving = historicalData.statistics?.trend?.direction === 'improving';
 
   const maxHeight = 120;
-  const normalizedData = aqiValues.map(aqi => (aqi / Math.max(...aqiValues)) * maxHeight);
+  const maxChartValue = Math.max(...aqiValues);
+  const normalizedData = aqiValues.map(aqi => (aqi / maxChartValue) * maxHeight);
 
   return (
     <View style={styles.container}>

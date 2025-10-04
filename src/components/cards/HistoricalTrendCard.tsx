@@ -18,6 +18,11 @@ export const HistoricalTrendCard: React.FC<HistoricalTrendCardProps> = ({
   const navigation = useNavigation();
   const styles = createStyles(theme);
 
+  // Validate readings data
+  if (!readings || !Array.isArray(readings) || readings.length === 0) {
+    return null; // Don't render if no data
+  }
+
   // Calculate statistics
   const aqiValues = readings.map(r => r.aqi);
   const avgAQI = Math.round(aqiValues.reduce((a, b) => a + b, 0) / aqiValues.length);
@@ -30,7 +35,10 @@ export const HistoricalTrendCard: React.FC<HistoricalTrendCardProps> = ({
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      onPress={() => navigation.navigate('HistoricalDetail' as never)}
+      onPress={() => navigation.navigate('HistoricalDetail' as never, {
+        readings,
+        initialPeriod: '7d',
+      } as never)}
     >
       <Card variant="elevated" style={styles.card}>
         <CardContent style={styles.content}>

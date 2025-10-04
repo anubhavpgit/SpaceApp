@@ -383,6 +383,16 @@ class AirQualityAPIClient {
 
     return response.data;
   }
+
+  /**
+   * Generic POST request
+   */
+  async post<T = any>(endpoint: string, data: any): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
 }
 
 // Export singleton instance

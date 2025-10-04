@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { ForecastItem } from '../../types/airQuality';
 import { getAQIColor } from '../../constants/aqi';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 interface ScrubbingTimelineProps {
   forecasts: ForecastItem[];
@@ -23,6 +23,7 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
   forecasts,
   onScrub,
 }) => {
+  const theme = useTheme();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const pan = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -61,6 +62,7 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
 
   const selectedForecast = forecasts[selectedIndex];
   const color = getAQIColor(selectedForecast.category);
+  const styles = createStyles(theme);
 
   return (
     <View style={styles.container}>
@@ -139,7 +141,7 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   container: {
     paddingVertical: theme.spacing.lg,
   },

@@ -1,19 +1,28 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { Card, CardContent } from '../components/ui/Card';
-import { MOCK_FORECAST } from '../api/mock/airQualityData';
-import { getAQIColor, getAQILabel } from '../constants/aqi';
+import { getAQIColor } from '../constants/aqi';
 
 export default function ForecastDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const route = useRoute();
   const theme = useTheme();
   const styles = createStyles(theme);
+  const { forecast } = route.params as any;
 
-  const forecasts = MOCK_FORECAST.forecasts;
+  if (!forecast || !forecast.forecasts || forecast.forecasts.length === 0) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.emptyText}>No forecast data available</Text>
+      </View>
+    );
+  }
+
+  const forecasts = forecast.forecasts;
 
   return (
     <View style={styles.container}>
@@ -105,6 +114,15 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background.primary,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
   },
   header: {
     flexDirection: 'row',

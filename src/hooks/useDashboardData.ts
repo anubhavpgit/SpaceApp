@@ -230,6 +230,8 @@ export const useDashboardData = (): UseDashboardDataReturn => {
         alertsCount: dashboardData.healthAlerts.length,
         forecastCount: dashboardData.forecast.forecasts?.length,
         historicalCount: dashboardData.historicalReadings.length,
+        historicalReadings: dashboardData.historicalReadings,
+        rawHistorical: response.historical7d?.raw,
       });
 
       // Update last fetched coordinates

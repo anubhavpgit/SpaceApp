@@ -33,6 +33,7 @@ export default function DashboardScreen() {
     hasForecast: data?.forecast?.forecasts?.length || 0,
     hasPollutants: data?.currentAQI?.pollutants ? Object.keys(data.currentAQI.pollutants).length : 0,
     hasHistorical: data?.historicalReadings?.length || 0,
+    historicalReadings: data?.historicalReadings,
   });
 
   const handleForecastScrub = (forecast: ForecastItem) => {
@@ -121,7 +122,10 @@ export default function DashboardScreen() {
             <Text style={styles.location}>{location.city || 'Unknown Location'}</Text>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => navigation.navigate('AirQualityDetail' as never)}
+              onPress={() => navigation.navigate('AirQualityDetail' as never, {
+                currentAQI: data.currentAQI,
+                dataSources: data.dataSources,
+              } as never)}
             >
               <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
             </TouchableOpacity>
@@ -156,7 +160,9 @@ export default function DashboardScreen() {
         {data.forecast?.forecasts && data.forecast.forecasts.length > 0 && (
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => navigation.navigate('ForecastDetail' as never)}
+            onPress={() => navigation.navigate('ForecastDetail' as never, {
+              forecast: data.forecast,
+            } as never)}
           >
             <Card variant="elevated" style={styles.forecastCard}>
               <CardContent style={styles.forecastContent}>
@@ -179,8 +185,14 @@ export default function DashboardScreen() {
         )}
 
         {/* Historical Trends */}
-        {data.historicalReadings && data.historicalReadings.length > 0 && (
+        {data.historicalReadings && data.historicalReadings.length > 0 ? (
           <HistoricalTrendCard readings={data.historicalReadings} period="7d" />
+        ) : (
+          console.log('[DashboardScreen] No historical readings to display:', {
+            hasHistoricalReadings: !!data.historicalReadings,
+            length: data.historicalReadings?.length,
+            data: data.historicalReadings
+          })
         )}
 
         {/* Footer */}

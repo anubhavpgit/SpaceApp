@@ -27,6 +27,10 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          decelerationRate="fast"
+          snapToInterval={76}
+          snapToAlignment="start"
+          scrollEventThrottle={16}
         >
           {hourlyForecasts.map((forecast, index) => {
             const color = getAQIColor(forecast.category);
