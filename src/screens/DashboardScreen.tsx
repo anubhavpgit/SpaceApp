@@ -66,15 +66,20 @@ export default function DashboardScreen() {
         ))}
 
         {/* 24-Hour Forecast */}
-        <Card variant="elevated" style={styles.forecastCard}>
-          <CardContent style={styles.forecastContent}>
-            <Text style={styles.cardLabel}>24-HOUR FORECAST</Text>
-            <ScrubbingTimeline
-              forecasts={MOCK_FORECAST.forecasts}
-              onScrub={handleForecastScrub}
-            />
-          </CardContent>
-        </Card>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('ForecastDetail' as never)}
+        >
+          <Card variant="elevated" style={styles.forecastCard}>
+            <CardContent style={styles.forecastContent}>
+              <Text style={styles.cardLabel}>24-HOUR FORECAST</Text>
+              <ScrubbingTimeline
+                forecasts={MOCK_FORECAST.forecasts}
+                onScrub={handleForecastScrub}
+              />
+            </CardContent>
+          </Card>
+        </TouchableOpacity>
 
         {/* Grid: Weather + Air Quality */}
         <View style={styles.grid}>
@@ -161,7 +166,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   grid: {
     flexDirection: 'row',
-    gap: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
   },
   footerText: {

@@ -1,0 +1,296 @@
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../hooks/useTheme';
+import { Card, CardContent } from '../components/ui/Card';
+import { MOCK_FORECAST } from '../api/mock/airQualityData';
+import { getAQIColor, getAQILabel } from '../constants/aqi';
+
+export default function ForecastDetailScreen() {
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+  const theme = useTheme();
+  const styles = createStyles(theme);
+
+  const forecasts = MOCK_FORECAST.forecasts;
+
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Text style={styles.backIcon}>‹</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>24-Hour Forecast</Text>
+        <View style={styles.placeholder} />
+      </View>
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Summary */}
+        <Card variant="elevated" style={styles.summaryCard}>
+          <CardContent style={styles.summaryContent}>
+            <Text style={styles.summaryLabel}>FORECAST SUMMARY</Text>
+            <Text style={styles.summaryText}>
+              Air quality will improve over the next 24 hours. Best conditions expected around 3 PM.
+              Sensitive groups should avoid outdoor activities during morning hours.
+            </Text>
+          </CardContent>
+        </Card>
+
+        {/* Hourly Breakdown */}
+        <Text style={styles.sectionTitle}>HOURLY BREAKDOWN</Text>
+        {forecasts.map((forecast, index) => {
+          const color = getAQIColor(forecast.category);
+          const label = getAQILabel(forecast.category);
+
+          return (
+            <Card key={index} variant="elevated" style={styles.forecastCard}>
+              <CardContent style={styles.forecastContent}>
+                <View style={styles.forecastHeader}>
+                  <View>
+                    <Text style={styles.forecastTime}>
+                      {new Date(forecast.timestamp).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </Text>
+                    <Text style={styles.forecastLabel}>{label}</Text>
+                  </View>
+                  <View style={styles.forecastValueContainer}>
+                    <Text style={styles.forecastValue}>{forecast.aqi}</Text>
+                    <Text style={styles.forecastUnit}>AQI</Text>
+                  </View>
+                </View>
+
+                <View style={styles.forecastBar}>
+                  <View
+                    style={[
+                      styles.forecastBarFill,
+                      {
+                        width: `${(forecast.aqi / 200) * 100}%`,
+                        backgroundColor: color,
+                      },
+                    ]}
+                  />
+                </View>
+
+                <View style={styles.forecastDetails}>
+                  <View style={styles.forecastDetailItem}>
+                    <Text style={styles.forecastDetailLabel}>Temp</Text>
+                    <Text style={styles.forecastDetailValue}>
+                      {Math.round(forecast.temperature)}°
+                    </Text>
+                  </View>
+                  <View style={styles.forecastDetailItem}>
+                    <Text style={styles.forecastDetailLabel}>Wind</Text>
+                    <Text style={styles.forecastDetailValue}>
+                      {Math.round(forecast.windSpeed)} km/h
+                    </Text>
+                  </View>
+                  <View style={styles.forecastDetailItem}>
+                    <Text style={styles.forecastDetailLabel}>Humidity</Text>
+                    <Text style={styles.forecastDetailValue}>
+                      {Math.round(forecast.humidity)}%
+                    </Text>
+                  </View>
+                </View>
+              </CardContent>
+            </Card>
+          );
+        })}
+
+        {/* Key Insights */}
+        <Text style={styles.sectionTitle}>KEY INSIGHTS</Text>
+        <Card variant="elevated" style={styles.card}>
+          <CardContent style={styles.cardContent}>
+            <View style={styles.insightRow}>
+              <View style={[styles.insightDot, { backgroundColor: '#10B981' }]} />
+              <Text style={styles.insightText}>Best air quality expected at 3:00 PM (AQI 45)</Text>
+            </View>
+            <View style={styles.insightRow}>
+              <View style={[styles.insightDot, { backgroundColor: '#EF4444' }]} />
+              <Text style={styles.insightText}>Highest pollution at 8:00 AM (AQI 85)</Text>
+            </View>
+            <View style={styles.insightRow}>
+              <View style={[styles.insightDot, { backgroundColor: '#F59E0B' }]} />
+              <Text style={styles.insightText}>
+                Wind patterns suggest gradual improvement throughout the day
+              </Text>
+            </View>
+          </CardContent>
+        </Card>
+
+        <Text style={styles.footer}>
+          Forecast updated every hour using NASA TEMPO data
+        </Text>
+      </ScrollView>
+    </View>
+  );
+}
+
+const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background.primary,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  backIcon: {
+    fontSize: 32,
+    fontWeight: theme.typography.weights.light,
+    color: theme.colors.text.primary,
+  },
+  headerTitle: {
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+  },
+  placeholder: {
+    width: 40,
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.xl,
+  },
+  summaryCard: {
+    marginBottom: theme.spacing.xl,
+  },
+  summaryContent: {
+    paddingVertical: theme.spacing.xl,
+  },
+  summaryLabel: {
+    fontSize: 10,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.md,
+  },
+  summaryText: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.base * 1.6,
+  },
+  sectionTitle: {
+    fontSize: 10,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.md,
+  },
+  forecastCard: {
+    marginBottom: theme.spacing.md,
+  },
+  forecastContent: {
+    paddingVertical: theme.spacing.lg,
+  },
+  forecastHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.md,
+  },
+  forecastTime: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+    marginBottom: 2,
+  },
+  forecastLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.tertiary,
+  },
+  forecastValueContainer: {
+    alignItems: 'flex-end',
+  },
+  forecastValue: {
+    fontSize: 32,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+    letterSpacing: -1,
+    lineHeight: 32,
+  },
+  forecastUnit: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.tertiary,
+  },
+  forecastBar: {
+    height: 6,
+    backgroundColor: theme.colors.overlay.medium,
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: theme.spacing.lg,
+  },
+  forecastBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  forecastDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  forecastDetailItem: {
+    alignItems: 'center',
+  },
+  forecastDetailLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.tertiary,
+    marginBottom: 2,
+  },
+  forecastDetailValue: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.primary,
+  },
+  card: {
+    marginBottom: theme.spacing.lg,
+  },
+  cardContent: {
+    paddingVertical: theme.spacing.xl,
+  },
+  insightRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: theme.spacing.lg,
+  },
+  insightDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: theme.spacing.md,
+    marginTop: 6,
+  },
+  insightText: {
+    flex: 1,
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  footer: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.muted,
+    textAlign: 'center',
+    marginTop: theme.spacing.xl,
+    marginBottom: theme.spacing.xxl,
+  },
+});

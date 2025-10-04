@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Card, CardContent } from '../ui/Card';
 import { Pollutants } from '../../types/airQuality';
 import { useTheme } from '../../hooks/useTheme';
@@ -10,6 +11,7 @@ interface AirQualityCompactCardProps {
 
 export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ pollutants }) => {
   const theme = useTheme();
+  const navigation = useNavigation();
   const styles = createStyles(theme);
 
   const topPollutants = [
@@ -19,8 +21,13 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ po
   ];
 
   return (
-    <Card variant="elevated" style={styles.card}>
-      <CardContent style={styles.content}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate('AirQualityDetail' as never)}
+      style={styles.touchable}
+    >
+      <Card variant="elevated" style={styles.card}>
+        <CardContent style={styles.content}>
         <Text style={styles.label}>AIR QUALITY</Text>
         <Text style={styles.mainValue}>{Math.round(pollutants.pm25)}</Text>
         <Text style={styles.mainUnit}>PM2.5 μg/m³</Text>
@@ -37,13 +44,15 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ po
         </View>
       </CardContent>
     </Card>
+    </TouchableOpacity>
   );
 };
 
 const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
-  card: {
+  touchable: {
     flex: 1,
   },
+  card: {},
   content: {
     paddingVertical: theme.spacing.xl,
   },

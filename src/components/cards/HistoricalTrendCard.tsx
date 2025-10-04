@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Card, CardContent } from '../ui/Card';
 import { AQIReading } from '../../types/airQuality';
 import { getAQIColor } from '../../constants/aqi';
@@ -12,9 +13,9 @@ interface HistoricalTrendCardProps {
 
 export const HistoricalTrendCard: React.FC<HistoricalTrendCardProps> = ({
   readings,
-  period,
 }) => {
   const theme = useTheme();
+  const navigation = useNavigation();
   const styles = createStyles(theme);
 
   // Calculate statistics
@@ -27,8 +28,12 @@ export const HistoricalTrendCard: React.FC<HistoricalTrendCardProps> = ({
   const normalizedData = aqiValues.map(aqi => (aqi / Math.max(...aqiValues)) * maxHeight);
 
   return (
-    <Card variant="elevated" style={styles.card}>
-      <CardContent style={styles.content}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate('HistoricalDetail' as never)}
+    >
+      <Card variant="elevated" style={styles.card}>
+        <CardContent style={styles.content}>
         <Text style={styles.label}>7-DAY TREND</Text>
 
         {/* Compact Chart */}
@@ -66,6 +71,7 @@ export const HistoricalTrendCard: React.FC<HistoricalTrendCardProps> = ({
         </View>
       </CardContent>
     </Card>
+    </TouchableOpacity>
   );
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Card, CardContent } from '../ui/Card';
 import { WeatherData } from '../../types/airQuality';
 import { useTheme } from '../../hooks/useTheme';
@@ -10,11 +11,17 @@ interface WeatherCompactCardProps {
 
 export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather }) => {
   const theme = useTheme();
+  const navigation = useNavigation();
   const styles = createStyles(theme);
 
   return (
-    <Card variant="elevated" style={styles.card}>
-      <CardContent style={styles.content}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate('WeatherDetail' as never)}
+      style={styles.touchable}
+    >
+      <Card variant="elevated" style={styles.card}>
+        <CardContent style={styles.content}>
         <Text style={styles.label}>WEATHER</Text>
         <Text style={styles.temperature}>{Math.round(weather.temperature)}°</Text>
         <Text style={styles.conditions}>{weather.conditions}</Text>
@@ -31,13 +38,16 @@ export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather 
         </View>
       </CardContent>
     </Card>
+    </TouchableOpacity>
   );
 };
 
 const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
-  card: {
+  touchable: {
     flex: 1,
+    marginRight: theme.spacing.lg,
   },
+  card: {},
   content: {
     paddingVertical: theme.spacing.xl,
   },

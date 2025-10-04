@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Card, CardContent } from '../ui/Card';
 import { HealthAlert } from '../../types/airQuality';
 import { useTheme } from '../../hooks/useTheme';
@@ -10,6 +11,7 @@ interface HealthAlertCardProps {
 
 export const HealthAlertCard: React.FC<HealthAlertCardProps> = ({ alert }) => {
   const theme = useTheme();
+  const navigation = useNavigation();
   const styles = createStyles(theme);
 
   const severityConfig = {
@@ -21,7 +23,10 @@ export const HealthAlertCard: React.FC<HealthAlertCardProps> = ({ alert }) => {
   const config = severityConfig[alert.severity];
 
   return (
-    <TouchableOpacity activeOpacity={0.7}>
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate('HealthAlertDetail' as never, { alert } as never)}
+    >
       <Card variant="elevated" style={[styles.card, { backgroundColor: config.bgColor }]}>
         <CardContent style={styles.content}>
           <View style={styles.row}>
