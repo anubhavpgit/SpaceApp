@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { SWRConfig } from 'swr';
 import DashboardScreen from './src/screens/DashboardScreen';
 import GlobeScreen from './screens/GlobeScreen';
 import AirQualityDetailScreen from './src/screens/AirQualityDetailScreen';
@@ -19,6 +20,7 @@ import ForecastDetailScreen from './src/screens/ForecastDetailScreen';
 import HistoricalDetailScreen from './src/screens/HistoricalDetailScreen';
 import HealthAlertDetailScreen from './src/screens/HealthAlertDetailScreen';
 import { LocationProvider } from './src/contexts/LocationContext';
+import { swrConfig } from './src/config/swr';
 
 const Stack = createStackNavigator();
 
@@ -54,9 +56,11 @@ function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <LocationProvider>
-          <AppNavigator />
-        </LocationProvider>
+        <SWRConfig value={swrConfig}>
+          <LocationProvider>
+            <AppNavigator />
+          </LocationProvider>
+        </SWRConfig>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

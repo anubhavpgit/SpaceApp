@@ -120,6 +120,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   statItem: {
     alignItems: 'center',
     gap: theme.spacing.xs,
+    flex: 1,
   },
   statLabel: {
     fontSize: theme.typography.sizes.xs,
@@ -129,7 +130,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     letterSpacing: 0.5,
   },
   statValue: {
-    fontSize: theme.typography.sizes.xl,
+    fontSize: theme.typography.sizes.lg,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text.primary,
   },

@@ -7,9 +7,15 @@ import { useTheme } from '../../hooks/useTheme';
 
 interface AirQualityCompactCardProps {
   pollutants: Pollutants;
+  currentAQI?: any;
+  dataSources?: any;
 }
 
-export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ pollutants }) => {
+export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({
+  pollutants,
+  currentAQI,
+  dataSources
+}) => {
   const theme = useTheme();
   const navigation = useNavigation();
   const styles = createStyles(theme);
@@ -25,7 +31,10 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ po
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      onPress={() => navigation.navigate('AirQualityDetail' as never)}
+      onPress={() => navigation.navigate('AirQualityDetail' as never, {
+        currentAQI,
+        dataSources,
+      } as never)}
       style={styles.touchable}
     >
       <Card variant="elevated" style={styles.card}>

@@ -4,13 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../contexts/LocationContext';
 import { useTheme } from '../hooks/useTheme';
-import { useDashboardData } from '../hooks/useDashboardData';
+import { useSwrDashboard } from '../hooks/useSwrDashboard';
 import { ScrubbingTimeline } from '../components/ui/ScrubbingTimeline';
 import { HealthAlertCard } from '../components/cards/HealthAlertCard';
 import { HistoricalTrendCard } from '../components/cards/HistoricalTrendCard';
 import { WeatherCompactCard } from '../components/cards/WeatherCompactCard';
 import { AirQualityCompactCard } from '../components/cards/AirQualityCompactCard';
 import { Card, CardContent } from '../components/ui/Card';
+import { AnimatedDataView } from '../components/ui/AnimatedDataView';
+import { RevalidationIndicator } from '../components/ui/RevalidationIndicator';
 import { ForecastItem } from '../types/airQuality';
 
 export default function DashboardScreen() {
@@ -18,7 +20,7 @@ export default function DashboardScreen() {
   const navigation = useNavigation();
   const { location } = useLocation();
   const theme = useTheme();
-  const { data, loading, error, refetch, lastUpdated } = useDashboardData();
+  const { data, loading, error, isValidating, mutate, lastUpdated } = useSwrDashboard();
   const [selectedForecast, setSelectedForecast] = useState<ForecastItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -42,7 +44,7 @@ export default function DashboardScreen() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    await mutate();
     setRefreshing(false);
   };
 
@@ -69,7 +71,7 @@ export default function DashboardScreen() {
         <Text style={styles.errorDetails}>
           Please check your internet connection and try again
         </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+        <TouchableOpacity style={styles.retryButton} onPress={mutate}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -82,7 +84,7 @@ export default function DashboardScreen() {
       <View style={[styles.container, styles.centerContent]}>
         <Text style={styles.errorTitle}>No data available</Text>
         <Text style={styles.errorMessage}>Unable to fetch air quality information</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={refetch}>
+        <TouchableOpacity style={styles.retryButton} onPress={mutate}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -116,40 +118,45 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.location}>{location.city || 'Unknown Location'}</Text>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => navigation.navigate('AirQualityDetail' as never, {
-                currentAQI: data.currentAQI,
-                dataSources: data.dataSources,
-              } as never)}
-            >
-              <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
-            </TouchableOpacity>
-            <Text style={styles.category}>
-              {data.currentAQI?.category?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}
-            </Text>
+        {/* Revalidation Indicator */}
+        <RevalidationIndicator isValidating={isValidating} lastUpdated={lastUpdated} />
 
-            {/* AI Summary - Left aligned with AQI */}
-            {data.currentAQISummary && (
-              <View style={styles.summaryContainer}>
-                <Text style={styles.summaryText}>{data.currentAQISummary.brief}</Text>
-                {data.currentAQISummary.insight && (
-                  <Text style={styles.insightText}>{data.currentAQISummary.insight}</Text>
-                )}
-              </View>
-            )}
+        {/* Header */}
+        <AnimatedDataView data={data.currentAQI} animationType="fade">
+          <View style={styles.header}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.location}>{location.city || 'Unknown Location'}</Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => navigation.navigate('AirQualityDetail' as never, {
+                  currentAQI: data.currentAQI,
+                  dataSources: data.dataSources,
+                } as never)}
+              >
+                <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
+              </TouchableOpacity>
+              <Text style={styles.category}>
+                {data.currentAQI?.category?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}
+              </Text>
+
+              {/* AI Summary - Left aligned with AQI */}
+              {data.currentAQISummary && (
+                <View style={styles.summaryContainer}>
+                  <Text style={styles.summaryText}>{data.currentAQISummary.brief}</Text>
+                  {data.currentAQISummary.insight && (
+                    <Text style={styles.insightText}>{data.currentAQISummary.insight}</Text>
+                  )}
+                </View>
+              )}
+            </View>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => navigation.navigate('Globe' as never)}
+            >
+              <Text style={styles.menuIcon}>•••</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.navigate('Globe' as never)}
-          >
-            <Text style={styles.menuIcon}>•••</Text>
-          </TouchableOpacity>
-        </View>
+        </AnimatedDataView>
 
         {/* Health Alerts - Compact */}
         {data.healthAlerts && data.healthAlerts.length > 0 && data.healthAlerts.map((alert) => (
@@ -158,35 +165,45 @@ export default function DashboardScreen() {
 
         {/* 24-Hour Forecast */}
         {data.forecast?.forecasts && data.forecast.forecasts.length > 0 && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('ForecastDetail' as never, {
-              forecast: data.forecast,
-            } as never)}
-          >
-            <Card variant="elevated" style={styles.forecastCard}>
-              <CardContent style={styles.forecastContent}>
-                <Text style={styles.cardLabel}>24-HOUR FORECAST</Text>
-                <ScrubbingTimeline
-                  forecasts={data.forecast.forecasts}
-                  onScrub={handleForecastScrub}
-                />
-              </CardContent>
-            </Card>
-          </TouchableOpacity>
+          <AnimatedDataView data={data.forecast} animationType="fade">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('ForecastDetail' as never, {
+                forecast: data.forecast,
+              } as never)}
+            >
+              <Card variant="elevated" style={styles.forecastCard}>
+                <CardContent style={styles.forecastContent}>
+                  <Text style={styles.cardLabel}>24-HOUR FORECAST</Text>
+                  <ScrubbingTimeline
+                    forecasts={data.forecast.forecasts}
+                    onScrub={handleForecastScrub}
+                  />
+                </CardContent>
+              </Card>
+            </TouchableOpacity>
+          </AnimatedDataView>
         )}
 
         {/* Grid: Weather + Air Quality */}
         {data.weather && data.currentAQI?.pollutants && (
-          <View style={styles.grid}>
-            <WeatherCompactCard weather={data.weather} />
-            <AirQualityCompactCard pollutants={data.currentAQI.pollutants} />
-          </View>
+          <AnimatedDataView data={data.weather} animationType="fade">
+            <View style={styles.grid}>
+              <WeatherCompactCard weather={data.weather} />
+              <AirQualityCompactCard
+                pollutants={data.currentAQI.pollutants}
+                currentAQI={data.currentAQI}
+                dataSources={data.dataSources}
+              />
+            </View>
+          </AnimatedDataView>
         )}
 
         {/* Historical Trends */}
         {data.historicalReadings && data.historicalReadings.length > 0 ? (
-          <HistoricalTrendCard readings={data.historicalReadings} period="7d" />
+          <AnimatedDataView data={data.historicalReadings} animationType="fade">
+            <HistoricalTrendCard readings={data.historicalReadings} period="7d" />
+          </AnimatedDataView>
         ) : (
           console.log('[DashboardScreen] No historical readings to display:', {
             hasHistoricalReadings: !!data.historicalReadings,
