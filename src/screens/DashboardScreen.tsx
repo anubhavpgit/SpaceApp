@@ -3,15 +3,13 @@ import { View, StyleSheet, ScrollView, Text, TouchableOpacity } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../contexts/LocationContext';
-import { AQIGauge } from '../components/ui/AQIGauge';
+import { useTheme } from '../hooks/useTheme';
 import { ScrubbingTimeline } from '../components/ui/ScrubbingTimeline';
-import { PollutantCard } from '../components/cards/PollutantCard';
 import { HealthAlertCard } from '../components/cards/HealthAlertCard';
-import { LocationCard } from '../components/cards/LocationCard';
-import { WeatherCard } from '../components/cards/WeatherCard';
-import { DataSourceCard } from '../components/cards/DataSourceCard';
 import { HistoricalTrendCard } from '../components/cards/HistoricalTrendCard';
-import { SmokeOverlay } from '../components/pollution/SmokeOverlay';
+import { WeatherCompactCard } from '../components/cards/WeatherCompactCard';
+import { AirQualityCompactCard } from '../components/cards/AirQualityCompactCard';
+import { Card, CardContent } from '../components/ui/Card';
 import {
   MOCK_CURRENT_AQI,
   MOCK_FORECAST,
@@ -19,188 +17,159 @@ import {
   MOCK_WEATHER,
   MOCK_HISTORICAL_DATA,
 } from '../api/mock/airQualityData';
-import { theme } from '../constants/theme';
 import { ForecastItem } from '../types/airQuality';
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { location } = useLocation();
+  const theme = useTheme();
   const [selectedForecast, setSelectedForecast] = useState<ForecastItem | null>(null);
 
   const handleForecastScrub = (forecast: ForecastItem) => {
     setSelectedForecast(forecast);
   };
 
+  const styles = createStyles(theme);
+
   return (
     <View style={styles.container}>
-      {/* Smoke overlay for visual effect */}
-      <SmokeOverlay category={MOCK_CURRENT_AQI.category} intensity={0.2} />
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top + 20,
+            paddingTop: insets.top + 16,
             paddingBottom: insets.bottom + 20,
           },
         ]}
+        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.headerTitle}>{location.displayName}</Text>
-            <Text style={styles.headerSubtitle}>Air Quality - Real-time monitoring</Text>
+          <View style={styles.headerLeft}>
+            <Text style={styles.location}>{location.city}</Text>
+            <Text style={styles.headerTitle}>{MOCK_CURRENT_AQI.aqi}</Text>
+            <Text style={styles.category}>{MOCK_CURRENT_AQI.category.replace('-', ' ').toUpperCase()}</Text>
           </View>
           <TouchableOpacity
-            style={styles.globeButton}
+            style={styles.menuButton}
             onPress={() => navigation.navigate('Globe' as never)}
           >
-            <Text style={styles.globeIcon}>🌐</Text>
+            <Text style={styles.menuIcon}>•••</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Location */}
-        <LocationCard location={MOCK_CURRENT_AQI.location} />
-
-        {/* Interactive AQI Gauge */}
-        <View style={styles.gaugeSection}>
-          <AQIGauge
-            aqi={MOCK_CURRENT_AQI.aqi}
-            category={MOCK_CURRENT_AQI.category}
-          />
-        </View>
-
-        {/* Health Alerts */}
+        {/* Health Alerts - Compact */}
         {MOCK_HEALTH_ALERTS.map((alert) => (
           <HealthAlertCard key={alert.id} alert={alert} />
         ))}
 
-        {/* Interactive Forecast Timeline */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>24-Hour Forecast</Text>
-          <ScrubbingTimeline
-            forecasts={MOCK_FORECAST.forecasts}
-            onScrub={handleForecastScrub}
-          />
-        </View>
+        {/* 24-Hour Forecast */}
+        <Card variant="elevated" style={styles.forecastCard}>
+          <CardContent style={styles.forecastContent}>
+            <Text style={styles.cardLabel}>24-HOUR FORECAST</Text>
+            <ScrubbingTimeline
+              forecasts={MOCK_FORECAST.forecasts}
+              onScrub={handleForecastScrub}
+            />
+          </CardContent>
+        </Card>
 
-        {/* Data Source Comparison */}
-        <DataSourceCard
-          tempoAQI={72}
-          groundAQI={68}
-          aggregatedAQI={MOCK_CURRENT_AQI.aqi}
-          lastUpdated={new Date()}
-        />
+        {/* Grid: Weather + Air Quality */}
+        <View style={styles.grid}>
+          <WeatherCompactCard weather={MOCK_WEATHER} />
+          <AirQualityCompactCard pollutants={MOCK_CURRENT_AQI.pollutants} />
+        </View>
 
         {/* Historical Trends */}
         <HistoricalTrendCard readings={MOCK_HISTORICAL_DATA} period="7d" />
 
-        {/* Weather Conditions */}
-        <WeatherCard weather={MOCK_WEATHER} />
-
-        {/* Pollutants Detail */}
-        <PollutantCard pollutants={MOCK_CURRENT_AQI.pollutants} />
-
-        {/* Footer Info */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            Data sourced from NASA TEMPO satellite and ground-based sensors
-          </Text>
-          <Text style={styles.footerSubtext}>
-            Last updated: {new Date().toLocaleTimeString()}
-          </Text>
-        </View>
+        {/* Footer */}
+        <Text style={styles.footerText}>
+          NASA TEMPO • Last updated {new Date().toLocaleTimeString()}
+        </Text>
       </ScrollView>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background.secondary,
+    backgroundColor: theme.colors.background.primary,
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: theme.spacing.xxl,
+    paddingHorizontal: theme.spacing.sm,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  location: {
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.xs,
   },
   headerTitle: {
-    fontSize: 36,
+    fontSize: 64,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text.primary,
-    letterSpacing: -1.5,
-    marginBottom: theme.spacing.sm,
+    letterSpacing: -3,
+    lineHeight: 68,
   },
-  headerSubtitle: {
+  category: {
     fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.light,
+    fontWeight: theme.typography.weights.semibold,
     color: theme.colors.text.secondary,
+    marginTop: theme.spacing.xs,
   },
-  globeButton: {
-    width: 48,
-    height: 48,
-    borderRadius: theme.borderRadius.lg,
-    backgroundColor: theme.colors.background.elevated,
+  menuButton: {
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    ...theme.shadows.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border.light,
   },
-  globeIcon: {
-    fontSize: 24,
+  menuIcon: {
+    fontSize: 20,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+    letterSpacing: 2,
   },
-  gaugeSection: {
-    alignItems: 'center',
-    paddingVertical: theme.spacing.xxxl,
-    marginBottom: theme.spacing.xl,
-    backgroundColor: theme.colors.background.elevated,
-    marginHorizontal: -theme.spacing.xl,
-    paddingHorizontal: theme.spacing.xl,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.border.light,
-  },
-  section: {
-    marginBottom: theme.spacing.xl,
-  },
-  sectionTitle: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.medium,
-    color: theme.colors.text.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  forecastCard: {
     marginBottom: theme.spacing.lg,
   },
-  footer: {
-    marginTop: theme.spacing.xxxl,
-    paddingTop: theme.spacing.xxxl,
-    paddingBottom: theme.spacing.xl,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border.light,
+  forecastContent: {
+    paddingVertical: theme.spacing.lg,
+  },
+  cardLabel: {
+    fontSize: 10,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.lg,
+  },
+  grid: {
+    flexDirection: 'row',
+    gap: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
   },
   footerText: {
-    fontSize: theme.typography.sizes.sm,
-    fontWeight: theme.typography.weights.light,
-    color: theme.colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.sm,
-    lineHeight: theme.typography.sizes.sm * 1.5,
-  },
-  footerSubtext: {
     fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.light,
+    fontWeight: theme.typography.weights.regular,
     color: theme.colors.text.muted,
     textAlign: 'center',
+    marginTop: theme.spacing.xxl,
+    marginBottom: theme.spacing.lg,
   },
 });

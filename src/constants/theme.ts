@@ -1,34 +1,65 @@
-export const theme = {
-  colors: {
-    background: {
-      primary: '#FFFFFF',     // Pure white
-      secondary: '#FAFAFA',   // Off-white for cards
-      tertiary: '#F5F5F5',    // Light gray
-      dark: '#000000',        // Pure black
-      elevated: '#FFFFFF',    // White for elevated cards
-    },
-    text: {
-      primary: '#000000',     // Black text
-      secondary: '#404040',   // Dark gray
-      tertiary: '#737373',    // Medium gray
-      inverse: '#FFFFFF',     // White text
-      muted: '#A3A3A3',       // Light gray text
-    },
-    border: {
-      light: 'rgba(0, 0, 0, 0.06)',
-      medium: 'rgba(0, 0, 0, 0.1)',
-      strong: 'rgba(0, 0, 0, 0.15)',
-    },
-    overlay: {
-      light: 'rgba(0, 0, 0, 0.02)',
-      medium: 'rgba(0, 0, 0, 0.05)',
-      dark: 'rgba(0, 0, 0, 0.2)',
-    },
-    accent: {
-      primary: '#000000',
-      secondary: '#404040',
-    },
+const lightColors = {
+  background: {
+    primary: '#FFFFFF',
+    secondary: '#FAFAFA',
+    tertiary: '#F5F5F5',
+    elevated: '#FFFFFF',
   },
+  text: {
+    primary: '#000000',
+    secondary: '#404040',
+    tertiary: '#737373',
+    inverse: '#FFFFFF',
+    muted: '#A3A3A3',
+  },
+  border: {
+    light: 'rgba(0, 0, 0, 0.06)',
+    medium: 'rgba(0, 0, 0, 0.1)',
+    strong: 'rgba(0, 0, 0, 0.15)',
+  },
+  overlay: {
+    light: 'rgba(0, 0, 0, 0.02)',
+    medium: 'rgba(0, 0, 0, 0.05)',
+    dark: 'rgba(0, 0, 0, 0.2)',
+  },
+  accent: {
+    primary: '#000000',
+    secondary: '#404040',
+  },
+};
+
+const darkColors = {
+  background: {
+    primary: '#000000',
+    secondary: '#0A0A0A',
+    tertiary: '#1A1A1A',
+    elevated: '#1A1A1A',
+  },
+  text: {
+    primary: '#FFFFFF',
+    secondary: '#B0B0B0',
+    tertiary: '#808080',
+    inverse: '#000000',
+    muted: '#606060',
+  },
+  border: {
+    light: 'rgba(255, 255, 255, 0.06)',
+    medium: 'rgba(255, 255, 255, 0.1)',
+    strong: 'rgba(255, 255, 255, 0.15)',
+  },
+  overlay: {
+    light: 'rgba(255, 255, 255, 0.02)',
+    medium: 'rgba(255, 255, 255, 0.05)',
+    dark: 'rgba(255, 255, 255, 0.2)',
+  },
+  accent: {
+    primary: '#FFFFFF',
+    secondary: '#B0B0B0',
+  },
+};
+
+export const createTheme = (isDark: boolean) => ({
+  colors: isDark ? darkColors : lightColors,
   typography: {
     weights: {
       light: '300' as const,
@@ -105,6 +136,9 @@ export const theme = {
       elevation: 12,
     },
   },
-} as const;
+});
 
-export type Theme = typeof theme;
+// Default light theme for static usage
+export const theme = createTheme(false);
+
+export type Theme = ReturnType<typeof createTheme>;

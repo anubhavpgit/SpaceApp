@@ -17,7 +17,6 @@ export const LocationCard: React.FC<LocationCardProps> = ({
     <Card variant="flat" style={styles.card}>
       <CardContent style={styles.content}>
         <View style={styles.locationInfo}>
-          <Text style={styles.icon}>📍</Text>
           <View style={styles.textContainer}>
             <Text style={styles.city}>{location.city}</Text>
             <Text style={styles.country}>{location.country}</Text>

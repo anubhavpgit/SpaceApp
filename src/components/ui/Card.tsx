@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import { theme } from '../../constants/theme';
+import { useTheme } from '../../hooks/useTheme';
 
 interface CardProps {
   children: React.ReactNode;
@@ -13,6 +13,9 @@ export const Card: React.FC<CardProps> = ({
   variant = 'flat',
   style,
 }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+
   const cardStyle = [
     styles.card,
     variant === 'elevated' && styles.elevated,
@@ -29,6 +32,8 @@ interface CardHeaderProps {
 }
 
 export const CardHeader: React.FC<CardHeaderProps> = ({ children, style }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   return <View style={[styles.header, style]}>{children}</View>;
 };
 
@@ -38,6 +43,8 @@ interface CardContentProps {
 }
 
 export const CardContent: React.FC<CardContentProps> = ({ children, style }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   return <View style={[styles.content, style]}>{children}</View>;
 };
 
@@ -47,10 +54,12 @@ interface CardFooterProps {
 }
 
 export const CardFooter: React.FC<CardFooterProps> = ({ children, style }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   return <View style={[styles.footer, style]}>{children}</View>;
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   card: {
     backgroundColor: theme.colors.background.elevated,
     borderRadius: theme.borderRadius.lg,

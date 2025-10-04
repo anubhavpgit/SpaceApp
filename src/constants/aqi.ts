@@ -52,42 +52,36 @@ export const POLLUTANT_INFO = {
     fullName: 'Fine Particulate Matter',
     unit: 'μg/m³',
     description: 'Tiny particles that can penetrate deep into the lungs',
-    icon: '🔴',
   },
   pm10: {
     name: 'PM10',
     fullName: 'Particulate Matter',
     unit: 'μg/m³',
     description: 'Inhalable particles that can affect the respiratory system',
-    icon: '🟤',
   },
   o3: {
     name: 'O₃',
     fullName: 'Ozone',
     unit: 'ppb',
     description: 'Ground-level ozone can trigger breathing problems',
-    icon: '🔵',
   },
   no2: {
     name: 'NO₂',
     fullName: 'Nitrogen Dioxide',
     unit: 'ppb',
     description: 'Gas primarily from vehicle emissions',
-    icon: '🟠',
   },
   so2: {
     name: 'SO₂',
     fullName: 'Sulfur Dioxide',
     unit: 'ppb',
     description: 'Gas from industrial facilities and power plants',
-    icon: '🟡',
   },
   co: {
     name: 'CO',
     fullName: 'Carbon Monoxide',
     unit: 'ppm',
     description: 'Colorless, odorless gas from combustion',
-    icon: '⚫',
   },
 } as const;
 
