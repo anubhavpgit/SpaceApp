@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { WeatherData } from '../../types/airQuality';
 import { theme } from '../../constants/theme';
@@ -9,6 +9,10 @@ interface WeatherCardProps {
 }
 
 export const WeatherCard: React.FC<WeatherCardProps> = ({ weather }) => {
+  const [useFahrenheit, setUseFahrenheit] = useState(true);
+
+  const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5) + 32;
+
   return (
     <Card variant="elevated" style={styles.card}>
       <CardHeader>
@@ -17,7 +21,14 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ weather }) => {
 
       <CardContent>
         <View style={styles.mainCondition}>
-          <Text style={styles.temperature}>{Math.round(weather.temperature)}°</Text>
+          <TouchableOpacity onPress={() => setUseFahrenheit(!useFahrenheit)} activeOpacity={0.7}>
+            <Text style={styles.temperature}>
+              {useFahrenheit
+                ? Math.round(celsiusToFahrenheit(weather.temperature))
+                : Math.round(weather.temperature)}
+              {useFahrenheit ? '°F' : '°C'}
+            </Text>
+          </TouchableOpacity>
           <Text style={styles.conditions}>{weather.conditions}</Text>
         </View>
 

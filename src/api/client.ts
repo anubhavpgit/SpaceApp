@@ -36,12 +36,55 @@ interface DashboardResponse {
       };
     };
     forecast24h: {
-      raw: AirQualityForecast;
+      raw: {
+        generatedAt: string;
+        modelVersion: string;
+        modelConfidence: number;
+        hourly: any[];
+        summary?: {
+          best: { timestamp: string; aqi: number; hour: string };
+          worst: { timestamp: string; aqi: number; hour: string };
+          trend: string;
+        };
+      };
       aiSummary: {
         brief: string;
         detailed: string;
         recommendations: string[];
         keyInsights: string;
+      };
+    };
+    dataSources?: {
+      raw: {
+        tempo: {
+          aqi: number | null;
+          available: boolean;
+          pollutants?: Record<string, number | null>;
+          coverage?: string;
+          spatialResolution?: string;
+          lastUpdate?: string;
+          confidence?: number;
+        };
+        ground: {
+          aqi: number | null;
+          available: boolean;
+          stationCount: number;
+          nearestStation?: string | null;
+          lastUpdate?: string | null;
+          confidence?: number;
+        };
+        aggregated: {
+          aqi: number;
+          method?: string;
+          weights?: Record<string, number>;
+          confidence?: number;
+        };
+      };
+      aiSummary: {
+        brief: string;
+        detailed: string;
+        validation: string;
+        dataQuality: string;
       };
     };
     historical7d: {

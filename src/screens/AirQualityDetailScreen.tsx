@@ -1,10 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
+import { useDashboardData } from '../hooks/useDashboardData';
 import { Card, CardContent } from '../components/ui/Card';
-import { MOCK_CURRENT_AQI } from '../api/mock/airQualityData';
 import { POLLUTANT_INFO } from '../constants/aqi';
 import { Pollutants } from '../types/airQuality';
 
@@ -13,9 +13,26 @@ export default function AirQualityDetailScreen() {
   const navigation = useNavigation();
   const theme = useTheme();
   const styles = createStyles(theme);
+  const { data, loading } = useDashboardData();
 
-  const pollutants = MOCK_CURRENT_AQI.pollutants;
+  if (loading || !data) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={theme.colors.text.primary} />
+      </View>
+    );
+  }
+
+  const pollutants = data.currentAQI.pollutants;
+  const currentAQI = data.currentAQI;
+  const dataSources = data.dataSources;
   const pollutantEntries = Object.entries(pollutants) as Array<[keyof Pollutants, number]>;
+
+  console.log('[AirQualityDetailScreen] Data:', {
+    currentAQI,
+    pollutants,
+    dataSources,
+  });
 
   const getPollutantLevel = (key: keyof Pollutants, value: number): { level: string; color: string } => {
     const levels: Record<keyof Pollutants, Array<{ max: number; level: string; color: string }>> = {
@@ -80,46 +97,63 @@ export default function AirQualityDetailScreen() {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Data Source Comparison */}
-        <Card variant="elevated" style={styles.card}>
-          <CardContent style={styles.cardContent}>
-            <Text style={styles.cardLabel}>DATA SOURCES</Text>
+        {dataSources && (
+          <Card variant="elevated" style={styles.card}>
+            <CardContent style={styles.cardContent}>
+              <Text style={styles.cardLabel}>DATA SOURCES</Text>
 
-            <View style={styles.sourceRow}>
-              <View style={styles.sourceInfo}>
-                <Text style={styles.sourceName}>NASA TEMPO</Text>
-                <Text style={styles.sourceDesc}>Satellite</Text>
+              {dataSources.tempo.available && (
+                <View style={styles.sourceRow}>
+                  <View style={styles.sourceInfo}>
+                    <Text style={styles.sourceName}>NASA TEMPO</Text>
+                    <Text style={styles.sourceDesc}>Satellite</Text>
+                  </View>
+                  <Text style={styles.sourceValue}>
+                    {dataSources.tempo.aqi !== null ? dataSources.tempo.aqi : 'N/A'}
+                  </Text>
+                </View>
+              )}
+
+              {dataSources.ground.available && (
+                <View style={styles.sourceRow}>
+                  <View style={styles.sourceInfo}>
+                    <Text style={styles.sourceName}>Ground Stations</Text>
+                    <Text style={styles.sourceDesc}>
+                      {dataSources.ground.stationCount} {dataSources.ground.stationCount === 1 ? 'sensor' : 'sensors'}
+                    </Text>
+                  </View>
+                  <Text style={styles.sourceValue}>
+                    {dataSources.ground.aqi !== null ? dataSources.ground.aqi : 'N/A'}
+                  </Text>
+                </View>
+              )}
+
+              <View style={[styles.sourceRow, styles.sourceRowHighlight]}>
+                <View style={styles.sourceInfo}>
+                  <Text style={styles.sourceNameBold}>Aggregated AQI</Text>
+                  <Text style={styles.sourceDesc}>
+                    Combined data ({Math.round(dataSources.aggregated.confidence * 100)}% confidence)
+                  </Text>
+                </View>
+                <Text style={styles.sourceValueBold}>{dataSources.aggregated.aqi}</Text>
               </View>
-              <Text style={styles.sourceValue}>72</Text>
-            </View>
 
-            <View style={styles.sourceRow}>
-              <View style={styles.sourceInfo}>
-                <Text style={styles.sourceName}>Ground Stations</Text>
-                <Text style={styles.sourceDesc}>Local sensors</Text>
-              </View>
-              <Text style={styles.sourceValue}>68</Text>
-            </View>
-
-            <View style={[styles.sourceRow, styles.sourceRowHighlight]}>
-              <View style={styles.sourceInfo}>
-                <Text style={styles.sourceNameBold}>Aggregated AQI</Text>
-                <Text style={styles.sourceDesc}>Combined data</Text>
-              </View>
-              <Text style={styles.sourceValueBold}>{MOCK_CURRENT_AQI.aqi}</Text>
-            </View>
-
-            <Text style={styles.sourceNote}>
-              Data combined from NASA TEMPO satellite and local ground-based sensors for accuracy
-            </Text>
-          </CardContent>
-        </Card>
+              <Text style={styles.sourceNote}>
+                Data combined from {dataSources.tempo.available ? 'NASA TEMPO satellite' : ''}
+                {dataSources.tempo.available && dataSources.ground.available ? ' and ' : ''}
+                {dataSources.ground.available ? 'ground-based sensors' : ''} for accuracy
+              </Text>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Detailed Pollutants */}
         <Text style={styles.sectionTitle}>POLLUTANT BREAKDOWN</Text>
 
         {pollutantEntries.map(([key, value]) => {
           const info = POLLUTANT_INFO[key];
-          const assessment = getPollutantLevel(key, value);
+          const safeValue = value ?? 0;
+          const assessment = getPollutantLevel(key, safeValue);
 
           return (
             <Card key={key} variant="elevated" style={styles.card}>
@@ -130,7 +164,7 @@ export default function AirQualityDetailScreen() {
                     <Text style={styles.pollutantFullName}>{info.fullName}</Text>
                   </View>
                   <View style={styles.pollutantValueContainer}>
-                    <Text style={styles.pollutantValue}>{value.toFixed(1)}</Text>
+                    <Text style={styles.pollutantValue}>{safeValue.toFixed(1)}</Text>
                     <Text style={styles.pollutantUnit}>{info.unit}</Text>
                   </View>
                 </View>
@@ -161,6 +195,10 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background.primary,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',

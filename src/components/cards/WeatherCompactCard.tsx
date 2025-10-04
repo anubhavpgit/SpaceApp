@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Card, CardContent } from '../ui/Card';
@@ -13,6 +13,18 @@ export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather 
   const theme = useTheme();
   const navigation = useNavigation();
   const styles = createStyles(theme);
+  const [useFahrenheit, setUseFahrenheit] = useState(true);
+
+  const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5) + 32;
+  const temperature = useFahrenheit
+    ? Math.round(celsiusToFahrenheit(weather.temperature))
+    : Math.round(weather.temperature);
+  const unit = useFahrenheit ? '°F' : '°C';
+
+  const handleTemperatureTap = (e: any) => {
+    e.stopPropagation();
+    setUseFahrenheit(!useFahrenheit);
+  };
 
   return (
     <TouchableOpacity
@@ -23,7 +35,9 @@ export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather 
       <Card variant="elevated" style={styles.card}>
         <CardContent style={styles.content}>
         <Text style={styles.label}>WEATHER</Text>
-        <Text style={styles.temperature}>{Math.round(weather.temperature)}°</Text>
+        <TouchableOpacity onPress={handleTemperatureTap} activeOpacity={0.7}>
+          <Text style={styles.temperature}>{temperature}{unit}</Text>
+        </TouchableOpacity>
         <Text style={styles.conditions}>{weather.conditions}</Text>
 
         <View style={styles.details}>

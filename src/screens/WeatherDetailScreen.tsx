@@ -1,22 +1,38 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
+import { useDashboardData } from '../hooks/useDashboardData';
 import { Card, CardContent } from '../components/ui/Card';
-import { MOCK_WEATHER } from '../api/mock/airQualityData';
 
 export default function WeatherDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const theme = useTheme();
   const styles = createStyles(theme);
+  const { data, loading } = useDashboardData();
+  const [useFahrenheit, setUseFahrenheit] = useState(true);
 
-  const weather = MOCK_WEATHER;
+  const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5) + 32;
+
+  if (loading || !data) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={theme.colors.text.primary} />
+      </View>
+    );
+  }
+
+  const weather = data.weather;
+  const tempInSelectedUnit = (temp: number) => useFahrenheit
+    ? Math.round(celsiusToFahrenheit(temp))
+    : Math.round(temp);
+  const tempUnit = useFahrenheit ? '°F' : '°C';
 
   const weatherMetrics = [
-    { label: 'Temperature', value: `${Math.round(weather.temperature)}°C`, icon: '🌡️' },
-    { label: 'Feels Like', value: `${Math.round(weather.temperature - 2)}°C`, icon: '💨' },
+    { label: 'Temperature', value: `${tempInSelectedUnit(weather.temperature)}${tempUnit}`, icon: '🌡️' },
+    { label: 'Feels Like', value: `${tempInSelectedUnit(weather.temperature - 2)}${tempUnit}`, icon: '💨' },
     { label: 'Humidity', value: `${Math.round(weather.humidity)}%`, icon: '💧' },
     { label: 'Wind Speed', value: `${Math.round(weather.windSpeed)} km/h`, icon: '🍃' },
     { label: 'Wind Direction', value: `${weather.windDirection}°`, icon: '🧭' },
@@ -40,7 +56,9 @@ export default function WeatherDetailScreen() {
         {/* Current Conditions */}
         <Card variant="elevated" style={styles.heroCard}>
           <CardContent style={styles.heroContent}>
-            <Text style={styles.heroTemp}>{Math.round(weather.temperature)}°</Text>
+            <TouchableOpacity onPress={() => setUseFahrenheit(!useFahrenheit)} activeOpacity={0.7}>
+              <Text style={styles.heroTemp}>{tempInSelectedUnit(weather.temperature)}{tempUnit}</Text>
+            </TouchableOpacity>
             <Text style={styles.heroCondition}>{weather.conditions}</Text>
             <Text style={styles.heroSubtext}>Partly cloudy with gentle breeze</Text>
           </CardContent>
@@ -108,6 +126,10 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background.primary,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',

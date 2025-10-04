@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
+import { useDashboardData } from '../hooks/useDashboardData';
 import { Card, CardContent } from '../components/ui/Card';
-import { MOCK_HISTORICAL_DATA } from '../api/mock/airQualityData';
 import { getAQIColor } from '../constants/aqi';
 
 export default function HistoricalDetailScreen() {
@@ -12,10 +12,42 @@ export default function HistoricalDetailScreen() {
   const navigation = useNavigation();
   const theme = useTheme();
   const styles = createStyles(theme);
+  const { data, loading } = useDashboardData();
 
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>('7d');
 
-  const readings = MOCK_HISTORICAL_DATA;
+  if (loading || !data) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={theme.colors.text.primary} />
+      </View>
+    );
+  }
+
+  // For now, use the available data
+  // TODO: Fetch data for selected period from API
+  const allReadings = data.historicalReadings;
+
+  if (!allReadings || allReadings.length === 0) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.emptyText}>No historical data available</Text>
+      </View>
+    );
+  }
+
+  // Use all available readings (API now returns daily data)
+  // The API should be updated to return 7, 30, or 90 days based on request
+  const readings = allReadings;
+
+  if (readings.length === 0) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.emptyText}>No data available for selected period</Text>
+      </View>
+    );
+  }
+
   const aqiValues = readings.map(r => r.aqi);
   const avgAQI = Math.round(aqiValues.reduce((a, b) => a + b, 0) / aqiValues.length);
   const maxAQI = Math.max(...aqiValues);
@@ -26,7 +58,7 @@ export default function HistoricalDetailScreen() {
   const secondHalf = aqiValues.slice(Math.floor(aqiValues.length / 2));
   const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
   const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-  const trendPercent = ((secondAvg - firstAvg) / firstAvg) * 100;
+  const trendPercent = firstAvg > 0 ? ((secondAvg - firstAvg) / firstAvg) * 100 : 0;
   const isImproving = trendPercent < 0;
 
   const maxHeight = 120;
@@ -86,7 +118,7 @@ export default function HistoricalDetailScreen() {
             <CardContent style={styles.statContent}>
               <Text style={styles.statLabel}>TREND</Text>
               <Text style={[styles.statValue, { color: isImproving ? '#10B981' : '#EF4444' }]}>
-                {isImproving ? '↓' : '↑'} {Math.abs(trendPercent).toFixed(1)}%
+                {isImproving ? '↓' : '↑'} {Math.abs(trendPercent ?? 0).toFixed(1)}%
               </Text>
               <Text style={styles.statUnit}>{isImproving ? 'Improving' : 'Worsening'}</Text>
             </CardContent>
@@ -128,58 +160,67 @@ export default function HistoricalDetailScreen() {
             </View>
 
             <View style={styles.xAxis}>
-              <Text style={styles.xAxisLabel}>7d ago</Text>
+              <Text style={styles.xAxisLabel}>{selectedPeriod === '7d' ? '7d ago' : selectedPeriod === '30d' ? '30d ago' : '90d ago'}</Text>
               <Text style={styles.xAxisLabel}>Today</Text>
             </View>
           </CardContent>
         </Card>
 
         {/* Daily Breakdown */}
-        <Text style={styles.sectionTitle}>DAILY BREAKDOWN</Text>
-        {readings.map((reading, index) => {
-          const color = getAQIColor(reading.category);
-          const date = new Date(reading.timestamp);
+        <Text style={styles.sectionTitle}>
+          {selectedPeriod === '7d' ? '7-DAY' : selectedPeriod === '30d' ? '30-DAY' : '90-DAY'} BREAKDOWN
+        </Text>
+        <Card variant="elevated" style={styles.card}>
+          <CardContent style={styles.cardContent}>
+            {readings.map((reading, index) => {
+              const color = getAQIColor(reading.category);
+              const date = new Date(reading.timestamp);
+              const isToday = index === readings.length - 1;
 
-          return (
-            <Card key={index} variant="elevated" style={styles.dayCard}>
-              <CardContent style={styles.dayContent}>
-                <View style={styles.dayHeader}>
-                  <View>
-                    <Text style={styles.dayDate}>
-                      {date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </Text>
-                    <Text style={styles.dayCategory}>{reading.category.replace('-', ' ')}</Text>
+              return (
+                <View key={index} style={[styles.dayRow, index === readings.length - 1 && styles.dayRowLast]}>
+                  <View style={styles.dayHeader}>
+                    <View style={styles.dayInfo}>
+                      <Text style={[styles.dayDate, isToday && styles.todayText]}>
+                        {isToday ? 'Today' : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </Text>
+                      <Text style={styles.dayCategory}>{reading.category.replace('-', ' ')}</Text>
+                    </View>
+                    <Text style={[styles.dayValue, { color }]}>{reading.aqi}</Text>
                   </View>
-                  <Text style={styles.dayValue}>{reading.aqi}</Text>
-                </View>
 
-                <View style={styles.dayBar}>
-                  <View
-                    style={[
-                      styles.dayBarFill,
-                      {
-                        width: `${(reading.aqi / maxAQI) * 100}%`,
-                        backgroundColor: color,
-                      },
-                    ]}
-                  />
+                  <View style={styles.dayBar}>
+                    <View
+                      style={[
+                        styles.dayBarFill,
+                        {
+                          width: `${(reading.aqi / 200) * 100}%`,
+                          backgroundColor: color,
+                        },
+                      ]}
+                    />
+                  </View>
                 </View>
-              </CardContent>
-            </Card>
-          );
-        })}
+              );
+            })}
+          </CardContent>
+        </Card>
 
         {/* Analysis */}
         <Text style={styles.sectionTitle}>ANALYSIS</Text>
         <Card variant="elevated" style={styles.card}>
           <CardContent style={styles.cardContent}>
-            <Text style={styles.analysisTitle}>7-Day Summary</Text>
+            <Text style={styles.analysisTitle}>
+              {selectedPeriod === '7d' ? '7-Day' : selectedPeriod === '30d' ? '30-Day' : '90-Day'} Summary
+            </Text>
             <Text style={styles.analysisText}>
               Air quality has {isImproving ? 'improved' : 'worsened'} by{' '}
-              {Math.abs(trendPercent).toFixed(1)}% over the past week. The average AQI was {avgAQI},
+              {Math.abs(trendPercent ?? 0).toFixed(1)}% over the past {selectedPeriod === '7d' ? 'week' : selectedPeriod === '30d' ? 'month' : '3 months'}. The average AQI was {avgAQI},
               with values ranging from {minAQI} to {maxAQI}. The best air quality was recorded on{' '}
               {new Date(readings[aqiValues.indexOf(minAQI)].timestamp).toLocaleDateString('en-US', {
                 weekday: 'long',
+                month: 'short',
+                day: 'numeric',
               })}.
             </Text>
           </CardContent>
@@ -197,6 +238,15 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background.primary,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
   },
   header: {
     flexDirection: 'row',
@@ -349,11 +399,13 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },
-  dayCard: {
-    marginBottom: theme.spacing.sm,
-  },
-  dayContent: {
+  dayRow: {
     paddingVertical: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
+  },
+  dayRowLast: {
+    borderBottomWidth: 0,
   },
   dayHeader: {
     flexDirection: 'row',
@@ -361,11 +413,18 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     alignItems: 'center',
     marginBottom: theme.spacing.md,
   },
+  dayInfo: {
+    flex: 1,
+  },
   dayDate: {
     fontSize: theme.typography.sizes.base,
     fontWeight: theme.typography.weights.semibold,
     color: theme.colors.text.primary,
     marginBottom: 2,
+  },
+  todayText: {
+    color: theme.colors.text.primary,
+    fontWeight: theme.typography.weights.bold,
   },
   dayCategory: {
     fontSize: theme.typography.sizes.xs,
@@ -376,7 +435,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   dayValue: {
     fontSize: 28,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.primary,
   },
   dayBar: {
     height: 6,

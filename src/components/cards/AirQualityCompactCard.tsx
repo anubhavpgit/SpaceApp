@@ -14,10 +14,12 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ po
   const navigation = useNavigation();
   const styles = createStyles(theme);
 
+  console.log('[AirQualityCompactCard] Received pollutants:', pollutants);
+
   const topPollutants = [
-    { key: 'pm25', name: 'PM2.5', value: pollutants.pm25, unit: 'μg/m³' },
-    { key: 'pm10', name: 'PM10', value: pollutants.pm10, unit: 'μg/m³' },
-    { key: 'o3', name: 'O₃', value: pollutants.o3, unit: 'ppb' },
+    { key: 'pm25', name: 'PM2.5', value: pollutants?.pm25 ?? 0, unit: 'μg/m³' },
+    { key: 'pm10', name: 'PM10', value: pollutants?.pm10 ?? 0, unit: 'μg/m³' },
+    { key: 'o3', name: 'O₃', value: pollutants?.o3 ?? 0, unit: 'ppb' },
   ];
 
   return (
@@ -29,7 +31,7 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ po
       <Card variant="elevated" style={styles.card}>
         <CardContent style={styles.content}>
         <Text style={styles.label}>AIR QUALITY</Text>
-        <Text style={styles.mainValue}>{Math.round(pollutants.pm25)}</Text>
+        <Text style={styles.mainValue}>{Math.round(pollutants?.pm25 ?? 0)}</Text>
         <Text style={styles.mainUnit}>PM2.5 μg/m³</Text>
 
         <View style={styles.details}>
@@ -37,7 +39,7 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({ po
             <View key={pollutant.key} style={styles.detailRow}>
               <Text style={styles.detailLabel}>{pollutant.name}</Text>
               <Text style={styles.detailValue}>
-                {pollutant.value.toFixed(0)} {pollutant.unit}
+                {(pollutant.value ?? 0).toFixed(0)} {pollutant.unit}
               </Text>
             </View>
           ))}

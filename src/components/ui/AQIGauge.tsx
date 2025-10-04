@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   categoryLabel: {
     fontSize: theme.typography.sizes.xl,
     fontWeight: theme.typography.weights.light,
-    marginTop: theme.spacing.xxl,
+    marginTop: theme.spacing.xxxl,
     letterSpacing: 0.5,
   },
 });

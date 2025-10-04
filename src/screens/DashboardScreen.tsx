@@ -29,6 +29,10 @@ export default function DashboardScreen() {
     hasError: !!error,
     lat: location.latitude,
     lon: location.longitude,
+    hasAlerts: data?.healthAlerts?.length || 0,
+    hasForecast: data?.forecast?.forecasts?.length || 0,
+    hasPollutants: data?.currentAQI?.pollutants ? Object.keys(data.currentAQI.pollutants).length : 0,
+    hasHistorical: data?.historicalReadings?.length || 0,
   });
 
   const handleForecastScrub = (forecast: ForecastItem) => {
@@ -115,10 +119,25 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.location}>{location.city || 'Unknown Location'}</Text>
-            <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('AirQualityDetail' as never)}
+            >
+              <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
+            </TouchableOpacity>
             <Text style={styles.category}>
               {data.currentAQI?.category?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}
             </Text>
+
+            {/* AI Summary - Left aligned with AQI */}
+            {data.currentAQISummary && (
+              <View style={styles.summaryContainer}>
+                <Text style={styles.summaryText}>{data.currentAQISummary.brief}</Text>
+                {data.currentAQISummary.insight && (
+                  <Text style={styles.insightText}>{data.currentAQISummary.insight}</Text>
+                )}
+              </View>
+            )}
           </View>
           <TouchableOpacity
             style={styles.menuButton}
@@ -251,6 +270,22 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+  },
+  summaryContainer: {
+    marginTop: theme.spacing.lg,
+  },
+  summaryText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  insightText: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.tertiary,
+    marginTop: theme.spacing.sm,
+    lineHeight: theme.typography.sizes.xs * 1.5,
   },
   location: {
     fontSize: theme.typography.sizes.lg,

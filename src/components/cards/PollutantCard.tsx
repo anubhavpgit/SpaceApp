@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { Pollutants, WeatherData } from '../../types/airQuality';
 import { POLLUTANT_INFO } from '../../constants/aqi';
@@ -12,6 +12,9 @@ interface PollutantCardProps {
 
 export const PollutantCard: React.FC<PollutantCardProps> = ({ pollutants, weather }) => {
   const pollutantEntries = Object.entries(pollutants) as Array<[keyof Pollutants, number]>;
+  const [useFahrenheit, setUseFahrenheit] = useState(true);
+
+  const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5) + 32;
 
   const getBarWidth = (value: number, max: number) => {
     return `${Math.min((value / max) * 100, 100)}%`;
@@ -38,7 +41,14 @@ export const PollutantCard: React.FC<PollutantCardProps> = ({ pollutants, weathe
           </CardHeader>
           <CardContent>
             <View style={styles.mainCondition}>
-              <Text style={styles.temperature}>{Math.round(weather.temperature)}°</Text>
+              <TouchableOpacity onPress={() => setUseFahrenheit(!useFahrenheit)} activeOpacity={0.7}>
+                <Text style={styles.temperature}>
+                  {useFahrenheit
+                    ? Math.round(celsiusToFahrenheit(weather.temperature))
+                    : Math.round(weather.temperature)}
+                  {useFahrenheit ? '°F' : '°C'}
+                </Text>
+              </TouchableOpacity>
               <Text style={styles.conditions}>{weather.conditions}</Text>
             </View>
 
@@ -86,14 +96,15 @@ export const PollutantCard: React.FC<PollutantCardProps> = ({ pollutants, weathe
         {pollutantEntries.map(([key, value]) => {
           const info = POLLUTANT_INFO[key];
           const max = getPollutantMax(key);
-          const barWidth = getBarWidth(value, max);
+          const safeValue = value ?? 0;
+          const barWidth = getBarWidth(safeValue, max);
 
           return (
             <View key={key} style={styles.pollutantRow}>
               <View style={styles.pollutantHeader}>
                 <Text style={styles.pollutantName}>{info.name}</Text>
                 <Text style={styles.pollutantValue}>
-                  {value.toFixed(1)} {info.unit}
+                  {safeValue.toFixed(1)} {info.unit}
                 </Text>
               </View>
               <View style={styles.barContainer}>

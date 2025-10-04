@@ -15,10 +15,32 @@ import {
 
 interface DashboardData {
   currentAQI: AQIReading;
+  currentAQISummary?: {
+    brief: string;
+    detailed: string;
+    recommendation: string;
+    insight: string;
+  };
   weather: WeatherData;
   forecast: AirQualityForecast;
   healthAlerts: HealthAlert[];
   historicalReadings: AQIReading[];
+  dataSources?: {
+    tempo: {
+      aqi: number | null;
+      available: boolean;
+      pollutants?: Record<string, number | null>;
+    };
+    ground: {
+      aqi: number | null;
+      available: boolean;
+      stationCount: number;
+    };
+    aggregated: {
+      aqi: number;
+      confidence: number;
+    };
+  };
   insights: {
     vsYesterday: {
       change: number;
@@ -115,12 +137,83 @@ export const useDashboardData = (): UseDashboardDataReturn => {
       }
 
       // Transform API response to match app data structure with safe fallbacks
+
+      // Extract pollutants from dataSources if currentAQI.pollutants is empty
+      const pollutants = response.currentAQI.raw.pollutants && Object.keys(response.currentAQI.raw.pollutants).length > 0
+        ? response.currentAQI.raw.pollutants
+        : {
+            pm25: response.dataSources?.raw?.tempo?.pollutants?.pm25 || 0,
+            pm10: response.dataSources?.raw?.tempo?.pollutants?.pm10 || 0,
+            o3: response.dataSources?.raw?.tempo?.pollutants?.o3 || 0,
+            no2: response.dataSources?.raw?.tempo?.pollutants?.no2 || 0,
+            so2: response.dataSources?.raw?.tempo?.pollutants?.so2 || 0,
+            co: response.dataSources?.raw?.tempo?.pollutants?.co || 0,
+          };
+
+      // Transform forecast data - API returns 'hourly' but app expects 'forecasts'
+      const forecastData = response.forecast24h?.raw;
+      const forecast: AirQualityForecast = {
+        location: response.location,
+        forecasts: (forecastData?.hourly || []).map((item: any) => ({
+          timestamp: new Date(item.timestamp),
+          aqi: item.aqi,
+          category: item.category,
+          confidence: forecastData?.modelConfidence || 0.85,
+          pollutants: {
+            pm25: item.pollutants?.pm25 || 0,
+            pm10: item.pollutants?.pm10 || 0,
+            o3: item.pollutants?.o3 || 0,
+            no2: item.pollutants?.no2 || 0,
+            so2: item.pollutants?.so2 || 0,
+            co: item.pollutants?.co || 0,
+          },
+          temperature: item.temperature,
+          humidity: item.humidity,
+          windSpeed: item.windSpeed,
+        })),
+        generatedAt: new Date(forecastData?.generatedAt || new Date()),
+        modelVersion: forecastData?.modelVersion || 'unknown',
+      };
+
       const dashboardData: DashboardData = {
-        currentAQI: response.currentAQI.raw,
-        weather: response.weather.raw,
-        forecast: response.forecast24h.raw,
+        currentAQI: {
+          ...response.currentAQI.raw,
+          pollutants,
+          timestamp: new Date(response.currentAQI.raw.lastUpdated || new Date()),
+          location: response.location,
+          source: 'aggregated' as const,
+          confidence: response.dataSources?.raw?.aggregated?.confidence || 0.9,
+        },
+        currentAQISummary: response.currentAQI?.aiSummary,
+        weather: {
+          ...response.weather.raw,
+          timestamp: new Date(response.weather.raw.timestamp),
+        },
+        forecast,
         healthAlerts: response.healthAlerts?.raw?.activeAlerts || [],
-        historicalReadings: response.historical7d?.raw?.readings || [],
+        historicalReadings: (response.historical7d?.raw?.readings || []).map((reading: any) => ({
+          ...reading,
+          timestamp: new Date(reading.timestamp),
+          location: response.location,
+          source: 'aggregated' as const,
+          confidence: 0.9,
+        })),
+        dataSources: response.dataSources?.raw ? {
+          tempo: {
+            aqi: response.dataSources.raw.tempo?.aqi || null,
+            available: response.dataSources.raw.tempo?.available || false,
+            pollutants: response.dataSources.raw.tempo?.pollutants,
+          },
+          ground: {
+            aqi: response.dataSources.raw.ground?.aqi || null,
+            available: response.dataSources.raw.ground?.available || false,
+            stationCount: response.dataSources.raw.ground?.stationCount || 0,
+          },
+          aggregated: {
+            aqi: response.dataSources.raw.aggregated?.aqi || response.currentAQI.raw.aqi,
+            confidence: response.dataSources.raw.aggregated?.confidence || 0.9,
+          },
+        } : undefined,
         insights: {
           vsYesterday: response.insights?.comparative?.vsYesterday || {
             change: 0,
@@ -133,6 +226,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
 
       console.log('[useDashboardData] Dashboard data transformed successfully', {
         aqiValue: dashboardData.currentAQI.aqi,
+        pollutants: dashboardData.currentAQI.pollutants,
         alertsCount: dashboardData.healthAlerts.length,
         forecastCount: dashboardData.forecast.forecasts?.length,
         historicalCount: dashboardData.historicalReadings.length,

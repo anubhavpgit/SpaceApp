@@ -130,16 +130,7 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
           })}
         </View>
 
-        {/* Scrubbing indicator */}
-        <Animated.View
-          style={[
-            styles.indicator,
-            {
-              left: (selectedIndex / forecasts.length) * TIMELINE_WIDTH,
-              backgroundColor: color,
-            },
-          ]}
-        />
+        {/* Scrubbing indicator - hidden, using bar highlight instead */}
       </View>
 
       {/* Instruction text */}
