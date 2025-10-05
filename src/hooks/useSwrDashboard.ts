@@ -3,7 +3,7 @@
  * Implements Stale-While-Revalidate pattern with multi-layer caching
  */
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import useSWR from 'swr';
 import { airQualityAPI } from '../api/client';
 import { useLocation } from '../contexts/LocationContext';
@@ -17,6 +17,9 @@ import {
   WeatherData,
   LiveWeatherReport,
 } from '../types/airQuality';
+
+// Cache invalidation threshold: 5 minutes
+const CACHE_INVALIDATION_THRESHOLD = 5 * 60 * 1000;
 
 interface AISummary {
   brief: string;
@@ -233,13 +236,27 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
 
   // Load initial data from L2 cache (AsyncStorage) for instant display
   const [fallbackData, setFallbackData] = useState<DashboardData | undefined>();
+  const [shouldRevalidate, setShouldRevalidate] = useState(true);
 
   useEffect(() => {
     if (cacheKey) {
-      cacheManager.get<DashboardData>(cacheKey).then((cached) => {
+      // Load cached data and check its age
+      Promise.all([
+        cacheManager.get<DashboardData>(cacheKey),
+        cacheManager.getCacheAge(cacheKey)
+      ]).then(([cached, cacheAge]) => {
         if (cached) {
           console.log('[useSwrDashboard] Loaded fallback data from L2 cache');
           setFallbackData(cached);
+
+          // Only revalidate if cache is older than 5 minutes
+          if (cacheAge !== undefined) {
+            const isStale = cacheAge > CACHE_INVALIDATION_THRESHOLD;
+            console.log('[useSwrDashboard] Cache age:', Math.round(cacheAge / 1000), 'seconds, isStale:', isStale);
+            setShouldRevalidate(isStale);
+          }
+        } else {
+          setShouldRevalidate(true);
         }
       });
     }
@@ -256,12 +273,12 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
       // Keep previous data while revalidating for smooth transitions
       keepPreviousData: true,
 
-      // Revalidate on focus and reconnect
-      revalidateOnFocus: true,
-      revalidateOnReconnect: true,
+      // Revalidate on focus and reconnect only if cache is stale
+      revalidateOnFocus: shouldRevalidate,
+      revalidateOnReconnect: shouldRevalidate,
 
-      // Background refresh every 15 minutes (architecture spec)
-      refreshInterval: 15 * 60 * 1000,
+      // Background refresh every 5 minutes
+      refreshInterval: CACHE_INVALIDATION_THRESHOLD,
 
       // Deduplicate requests within 2 seconds - prevents duplicate calls
       dedupingInterval: 2000,
@@ -270,11 +287,21 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
       errorRetryCount: 3,
       errorRetryInterval: 5000,
 
-      // Revalidate stale data
-      revalidateIfStale: true,
+      // Revalidate stale data based on cache age
+      revalidateIfStale: shouldRevalidate,
+
+      // Only revalidate on mount if cache is stale
+      revalidateOnMount: shouldRevalidate,
 
       // Optimize for mobile
       loadingTimeout: 10000,
+
+      // Update shouldRevalidate after successful fetch
+      onSuccess: (newData) => {
+        setShouldRevalidate(false);
+        // Reset to true after cache invalidation threshold
+        setTimeout(() => setShouldRevalidate(true), CACHE_INVALIDATION_THRESHOLD);
+      },
     }
   );
 
@@ -285,12 +312,36 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
     return data ? new Date() : null;
   }, [data]);
 
+  // Background refresh mechanism - check cache age every minute and refresh if needed
+  useEffect(() => {
+    if (!cacheKey) return;
+
+    const checkAndRefresh = async () => {
+      const isStale = await cacheManager.isCacheStale(cacheKey, CACHE_INVALIDATION_THRESHOLD);
+
+      if (isStale) {
+        console.log('[useSwrDashboard] Cache is stale, triggering background refresh');
+        setShouldRevalidate(true);
+        await mutate();
+      }
+    };
+
+    // Check immediately on mount
+    checkAndRefresh();
+
+    // Then check every minute
+    const intervalId = setInterval(checkAndRefresh, 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [cacheKey, mutate]);
+
   return {
     data,
     loading,
     error,
     isValidating,
     mutate: async () => {
+      setShouldRevalidate(true);
       await mutate();
     },
     lastUpdated,

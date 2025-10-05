@@ -40,7 +40,8 @@ export const createFetcher = <T,>(
  * Global SWR configuration aligned with architecture:
  * - L1 Cache: In-memory (5 min TTL)
  * - L2 Cache: AsyncStorage (1 hour TTL)
- * - Background Sync: Every 15 minutes
+ * - Background Sync: Every 5 minutes
+ * - Smart invalidation: Only refresh if cache is older than 5 minutes
  */
 export const swrConfig: SWRConfiguration = {
   // Revalidation options
@@ -54,8 +55,8 @@ export const swrConfig: SWRConfiguration = {
   // Cache lifetime - 5 minutes for stale data
   focusThrottleInterval: 5 * 60 * 1000,
 
-  // Refresh interval - 15 minutes (architecture spec)
-  refreshInterval: 15 * 60 * 1000,
+  // Refresh interval - 5 minutes for timely updates
+  refreshInterval: 5 * 60 * 1000,
 
   // Error retry configuration
   errorRetryCount: 3,

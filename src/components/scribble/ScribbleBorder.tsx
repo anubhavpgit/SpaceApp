@@ -12,6 +12,7 @@ interface ScribbleBorderProps {
   strokeWidth?: number;
   roughness?: number;
   borderRadius?: number;
+  seed?: number; // Optional seed for deterministic path generation
   style?: any;
 }
 
@@ -20,6 +21,7 @@ export const ScribbleBorder: React.FC<ScribbleBorderProps> = ({
   strokeWidth = 2.5,
   roughness = 1.5,
   borderRadius = 12,
+  seed,
   style,
 }) => {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -40,16 +42,18 @@ export const ScribbleBorder: React.FC<ScribbleBorderProps> = ({
         dimensions.width,
         dimensions.height,
         roughness,
-        borderRadius
+        borderRadius,
+        seed
       ),
       path2: generateScribblePath(
         dimensions.width,
         dimensions.height,
         roughness * 0.8, // Slightly less rough for second stroke
-        borderRadius
+        borderRadius,
+        seed !== undefined ? seed + 1 : undefined // Use different seed for second stroke
       ),
     };
-  }, [dimensions.width, dimensions.height, roughness, borderRadius]);
+  }, [dimensions.width, dimensions.height, roughness, borderRadius, seed]);
 
   if (dimensions.width === 0 || dimensions.height === 0) {
     return <View style={[styles.container, style]} onLayout={handleLayout} />;

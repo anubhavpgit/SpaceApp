@@ -4,6 +4,30 @@
  */
 
 /**
+ * Seeded random number generator for deterministic scribble paths
+ * Uses a simple LCG (Linear Congruential Generator)
+ */
+class SeededRandom {
+  private seed: number;
+
+  constructor(seed: number) {
+    this.seed = seed;
+  }
+
+  next(): number {
+    this.seed = (this.seed * 9301 + 49297) % 233280;
+    return this.seed / 233280;
+  }
+}
+
+/**
+ * Get random number from seeded generator or Math.random
+ */
+const getRandom = (seededRng?: SeededRandom): number => {
+  return seededRng ? seededRng.next() : Math.random();
+};
+
+/**
  * Generate points along a line with wobble for hand-drawn effect
  */
 const generateWobblyLine = (
@@ -13,7 +37,8 @@ const generateWobblyLine = (
   y2: number,
   roughness: number,
   segments: number = 8,
-  isFirstSegment: boolean = false
+  isFirstSegment: boolean = false,
+  seededRng?: SeededRandom
 ): string => {
   const points: Array<{ x: number; y: number }> = [];
 
@@ -25,7 +50,7 @@ const generateWobblyLine = (
     // Add wobble perpendicular to the line direction
     const angle = Math.atan2(y2 - y1, x2 - x1);
     const perpAngle = angle + Math.PI / 2;
-    const wobbleAmount = (Math.random() - 0.5) * roughness;
+    const wobbleAmount = (getRandom(seededRng) - 0.5) * roughness;
 
     points.push({
       x: x + Math.cos(perpAngle) * wobbleAmount,
@@ -38,8 +63,8 @@ const generateWobblyLine = (
   for (let i = 0; i < points.length - 1; i++) {
     const curr = points[i];
     const next = points[i + 1];
-    const controlX = (curr.x + next.x) / 2 + (Math.random() - 0.5) * roughness * 0.3;
-    const controlY = (curr.y + next.y) / 2 + (Math.random() - 0.5) * roughness * 0.3;
+    const controlX = (curr.x + next.x) / 2 + (getRandom(seededRng) - 0.5) * roughness * 0.3;
+    const controlY = (curr.y + next.y) / 2 + (getRandom(seededRng) - 0.5) * roughness * 0.3;
 
     if (i === 0 && isFirstSegment) {
       path += `M ${curr.x},${curr.y} `;
@@ -60,14 +85,15 @@ const generateWobblyArc = (
   startAngle: number,
   endAngle: number,
   roughness: number,
-  segments: number = 6
+  segments: number = 6,
+  seededRng?: SeededRandom
 ): string => {
   const points: Array<{ x: number; y: number }> = [];
 
   for (let i = 0; i <= segments; i++) {
     const t = i / segments;
     const angle = startAngle + (endAngle - startAngle) * t;
-    const wobbleR = radius + (Math.random() - 0.5) * roughness * 0.5;
+    const wobbleR = radius + (getRandom(seededRng) - 0.5) * roughness * 0.5;
 
     points.push({
       x: centerX + Math.cos(angle) * wobbleR,
@@ -80,8 +106,8 @@ const generateWobblyArc = (
   for (let i = 0; i < points.length - 1; i++) {
     const curr = points[i];
     const next = points[i + 1];
-    const controlX = (curr.x + next.x) / 2 + (Math.random() - 0.5) * roughness * 0.2;
-    const controlY = (curr.y + next.y) / 2 + (Math.random() - 0.5) * roughness * 0.2;
+    const controlX = (curr.x + next.x) / 2 + (getRandom(seededRng) - 0.5) * roughness * 0.2;
+    const controlY = (curr.y + next.y) / 2 + (getRandom(seededRng) - 0.5) * roughness * 0.2;
 
     path += `Q ${controlX},${controlY} ${next.x},${next.y} `;
   }
@@ -95,15 +121,20 @@ const generateWobblyArc = (
  * @param height - Height of the element
  * @param roughness - How rough/wobbly the edges should be (0-5)
  * @param borderRadius - Radius for rounded corners
+ * @param seed - Optional seed for deterministic path generation (for mask/border synchronization)
  */
 export const generateScribblePath = (
   width: number,
   height: number,
   roughness: number = 1.5,
-  borderRadius: number = 12
+  borderRadius: number = 12,
+  seed?: number
 ): string => {
-  // Add inset to keep wobble within bounds
-  const inset = Math.max(roughness * 1.5, 3);
+  // Create seeded RNG if seed is provided
+  const seededRng = seed !== undefined ? new SeededRandom(seed) : undefined;
+
+  // Add inset to keep wobble within bounds (account for wobble + control point variance)
+  const inset = Math.max(roughness * 2.5, 5);
 
   // Adjust dimensions to account for inset
   const w = width - inset * 2;
@@ -117,7 +148,8 @@ export const generateScribblePath = (
     inset + w - r, inset,
     roughness,
     segments,
-    true // First segment - includes M command
+    true, // First segment - includes M command
+    seededRng
   );
 
   // Top-right corner arc
@@ -126,7 +158,8 @@ export const generateScribblePath = (
     r,
     -Math.PI / 2, 0,
     roughness,
-    6
+    6,
+    seededRng
   );
 
   // Right edge (top to bottom)
@@ -135,7 +168,8 @@ export const generateScribblePath = (
     inset + w, inset + h - r,
     roughness,
     segments,
-    false
+    false,
+    seededRng
   );
 
   // Bottom-right corner arc
@@ -144,7 +178,8 @@ export const generateScribblePath = (
     r,
     0, Math.PI / 2,
     roughness,
-    6
+    6,
+    seededRng
   );
 
   // Bottom edge (right to left)
@@ -153,7 +188,8 @@ export const generateScribblePath = (
     inset + r, inset + h,
     roughness,
     segments,
-    false
+    false,
+    seededRng
   );
 
   // Bottom-left corner arc
@@ -162,7 +198,8 @@ export const generateScribblePath = (
     r,
     Math.PI / 2, Math.PI,
     roughness,
-    6
+    6,
+    seededRng
   );
 
   // Left edge (bottom to top)
@@ -171,7 +208,8 @@ export const generateScribblePath = (
     inset, inset + r,
     roughness,
     segments,
-    false
+    false,
+    seededRng
   );
 
   // Top-left corner arc - completes the loop back to start
@@ -180,7 +218,8 @@ export const generateScribblePath = (
     r,
     Math.PI, Math.PI * 1.5,
     roughness,
-    6
+    6,
+    seededRng
   );
 
   // Combine all segments into one continuous closed path

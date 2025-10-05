@@ -120,6 +120,69 @@ export class CacheManager {
   keys(): string[] {
     return Array.from(this.memoryCache.keys());
   }
+
+  /**
+   * Get cache age in milliseconds
+   * Returns undefined if cache doesn't exist
+   */
+  async getCacheAge(key: string): Promise<number | undefined> {
+    // Check memory cache first
+    const memoryEntry = this.memoryCache.get(key);
+    if (memoryEntry) {
+      return Date.now() - memoryEntry.timestamp;
+    }
+
+    // Check persistent cache
+    try {
+      const persistentData = await AsyncStorage.getItem(CACHE_PREFIX + key);
+      if (persistentData) {
+        const entry: CacheEntry<any> = JSON.parse(persistentData);
+        return Date.now() - entry.timestamp;
+      }
+    } catch (error) {
+      console.error('[CacheManager] Error reading cache age:', error);
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Check if cache is older than specified duration (in milliseconds)
+   */
+  async isCacheStale(key: string, maxAge: number): Promise<boolean> {
+    const age = await this.getCacheAge(key);
+    if (age === undefined) {
+      return true; // No cache means stale
+    }
+    return age > maxAge;
+  }
+
+  /**
+   * Get cache entry with metadata (timestamp, age, isExpired)
+   */
+  async getCacheMetadata(key: string): Promise<{
+    exists: boolean;
+    age?: number;
+    timestamp?: number;
+    isExpired?: boolean;
+  }> {
+    const age = await this.getCacheAge(key);
+
+    if (age === undefined) {
+      return { exists: false };
+    }
+
+    // Check if it's expired
+    const memoryEntry = this.memoryCache.get(key);
+    const ttl = memoryEntry?.ttl || this.PERSISTENT_TTL;
+
+    return {
+      exists: true,
+      age,
+      timestamp: Date.now() - age,
+      isExpired: age > ttl,
+    };
+  }
 }
 
 // Singleton instance
