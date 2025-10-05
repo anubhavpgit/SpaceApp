@@ -226,7 +226,7 @@ export default function BlackWhiteGlobe({ onLocationSelect }: BlackWhiteGlobePro
           `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
           {
             headers: {
-              'User-Agent': 'NasaSpaceApp/1.0'
+              'User-Agent': 'LightHouse/1.0'
             }
           }
         );
