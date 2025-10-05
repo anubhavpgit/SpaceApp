@@ -34,7 +34,11 @@ const DEFAULT_LOCATION: LocationData = {
 export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   console.log('[LocationContext] LocationProvider rendering');
   const [location, setLocation] = useState<LocationData>({
-    ...DEFAULT_LOCATION,
+    latitude: 0,
+    longitude: 0,
+    city: '',
+    country: '',
+    displayName: '',
     isLoading: true,
   });
   const locationAttemptedRef = React.useRef(false);

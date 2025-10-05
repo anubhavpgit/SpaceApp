@@ -168,9 +168,9 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
 
   // Generate cache key based on location
   const cacheKey = useMemo(() => {
-    if (!location.latitude || !location.longitude) return null;
+    if (!location.latitude || !location.longitude || location.isLoading) return null;
     return CacheKeys.dashboard(location.latitude, location.longitude);
-  }, [location.latitude, location.longitude]);
+  }, [location.latitude, location.longitude, location.isLoading]);
 
   // Fetcher function that integrates with cache manager
   const fetcher = async () => {
