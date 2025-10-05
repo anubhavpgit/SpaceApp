@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl, Modal, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../contexts/LocationContext';
 import { usePersona } from '../contexts/PersonaContext';
 import { useTheme } from '../hooks/useTheme';
 import { useSwrDashboard } from '../hooks/useSwrDashboard';
+import { Text } from '../components/ui/Text';
 import { ScrubbingTimeline } from '../components/ui/ScrubbingTimeline';
 import { HealthAlertCard } from '../components/cards/HealthAlertCard';
 import { HistoricalTrendCard } from '../components/cards/HistoricalTrendCard';
@@ -16,6 +17,7 @@ import { AnimatedDataView } from '../components/ui/AnimatedDataView';
 import { RevalidationIndicator } from '../components/ui/RevalidationIndicator';
 import { ForecastItem } from '../types/airQuality';
 import { PersonaInsightDropdown } from '../components/PersonaInsightDropdown';
+import { AQI_LEVEL_COLORS, PASTEL_COLORS } from '../constants/colors';
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
@@ -26,6 +28,7 @@ export default function DashboardScreen() {
   const { data, loading, error, isValidating, mutate, lastUpdated } = useSwrDashboard();
   const [selectedForecast, setSelectedForecast] = useState<ForecastItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [showAQIInfo, setShowAQIInfo] = useState(false);
 
   // NOTE: Removed persona change useEffect that was calling mutate()
   // SWR automatically refetches when cache key changes (which includes persona)
@@ -144,15 +147,24 @@ export default function DashboardScreen() {
           <View style={styles.header}>
             <View style={styles.headerLeft}>
               <Text style={styles.location}>{location.city || 'Unknown Location'}</Text>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => navigation.navigate('AirQualityDetail' as never, {
-                  currentAQI: data.currentAQI,
-                  dataSources: data.dataSources,
-                } as never)}
-              >
-                <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
-              </TouchableOpacity>
+              <View style={styles.aqiRow}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => navigation.navigate('AirQualityDetail' as never, {
+                    currentAQI: data.currentAQI,
+                    dataSources: data.dataSources,
+                  } as never)}
+                >
+                  <Text style={styles.headerTitle}>{data.currentAQI?.aqi || '--'}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.infoButton}
+                  onPress={() => setShowAQIInfo(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.infoButtonText}>i</Text>
+                </TouchableOpacity>
+              </View>
               <Text style={styles.category}>
                 {data.currentAQI?.category?.replace('-', ' ').toUpperCase() || 'UNKNOWN'}
               </Text>
@@ -160,9 +172,9 @@ export default function DashboardScreen() {
               {/* AI Summary - Left aligned with AQI */}
               {data.currentAQISummary && (
                 <View style={styles.summaryContainer}>
-                  <Text style={styles.summaryText}>{data.currentAQISummary.brief}</Text>
+                  <Text readable style={styles.summaryText}>{data.currentAQISummary.brief}</Text>
                   {data.currentAQISummary.insight && (
-                    <Text style={styles.insightText}>{data.currentAQISummary.insight}</Text>
+                    <Text readable style={styles.insightText}>{data.currentAQISummary.insight}</Text>
                   )}
                 </View>
               )}
@@ -251,6 +263,63 @@ export default function DashboardScreen() {
           NASA TEMPO • Last updated {lastUpdated?.toLocaleTimeString() || 'Loading...'}
         </Text>
       </ScrollView>
+
+      {/* AQI Info Modal */}
+      <Modal
+        visible={showAQIInfo}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAQIInfo(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setShowAQIInfo(false)}
+        >
+          <Pressable
+            style={styles.modalContent}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>AQI Scale</Text>
+              <TouchableOpacity
+                onPress={() => setShowAQIInfo(false)}
+                style={styles.modalCloseButton}
+              >
+                <Text style={styles.modalCloseText}>×</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalBody}>
+              <View style={styles.aqiLevelsContainer}>
+                <View style={[styles.aqiLevel, { backgroundColor: AQI_LEVEL_COLORS.good }]}>
+                  <Text style={[styles.aqiLevelText, { color: PASTEL_COLORS.deepBlueGray }]}>0-50</Text>
+                  <Text style={[styles.aqiLevelLabel, { color: PASTEL_COLORS.deepBlueGray }]}>Good</Text>
+                </View>
+                <View style={[styles.aqiLevel, { backgroundColor: AQI_LEVEL_COLORS.moderate }]}>
+                  <Text style={[styles.aqiLevelText, { color: PASTEL_COLORS.deepBlueGray }]}>51-100</Text>
+                  <Text style={[styles.aqiLevelLabel, { color: PASTEL_COLORS.deepBlueGray }]}>Moderate</Text>
+                </View>
+                <View style={[styles.aqiLevel, { backgroundColor: AQI_LEVEL_COLORS.unhealthySensitive }]}>
+                  <Text style={[styles.aqiLevelText, { color: PASTEL_COLORS.deepBlueGray }]}>101-150</Text>
+                  <Text style={[styles.aqiLevelLabel, { color: PASTEL_COLORS.deepBlueGray }]}>Unhealthy (Sensitive)</Text>
+                </View>
+                <View style={[styles.aqiLevel, { backgroundColor: AQI_LEVEL_COLORS.unhealthy }]}>
+                  <Text style={[styles.aqiLevelText, { color: PASTEL_COLORS.deepBlueGray }]}>151-200</Text>
+                  <Text style={[styles.aqiLevelLabel, { color: PASTEL_COLORS.deepBlueGray }]}>Unhealthy</Text>
+                </View>
+                <View style={[styles.aqiLevel, { backgroundColor: AQI_LEVEL_COLORS.veryUnhealthy }]}>
+                  <Text style={[styles.aqiLevelText, { color: PASTEL_COLORS.deepBlueGray }]}>201-300</Text>
+                  <Text style={[styles.aqiLevelLabel, { color: PASTEL_COLORS.deepBlueGray }]}>Very Unhealthy</Text>
+                </View>
+                <View style={[styles.aqiLevel, { backgroundColor: AQI_LEVEL_COLORS.hazardous }]}>
+                  <Text style={[styles.aqiLevelText, { color: PASTEL_COLORS.deepBlueGray }]}>301+</Text>
+                  <Text style={[styles.aqiLevelLabel, { color: PASTEL_COLORS.deepBlueGray }]}>Hazardous</Text>
+                </View>
+              </View>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -310,9 +379,9 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   locationNotice: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    backgroundColor: 'rgba(255, 217, 61, 0.15)',
     borderLeftWidth: 4,
-    borderLeftColor: '#F59E0B',
+    borderLeftColor: PASTEL_COLORS.golden,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,
     marginBottom: theme.spacing.lg,
@@ -333,6 +402,26 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+  },
+  aqiRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
+  infoButton: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: theme.colors.text.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  infoButtonText: {
+    fontSize: 12,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
   },
   summaryContainer: {
     marginTop: theme.spacing.lg,
@@ -391,7 +480,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   cardLabel: {
     fontSize: 10,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.lg,
   },
@@ -406,5 +495,69 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     textAlign: 'center',
     marginTop: theme.spacing.xxl,
     marginBottom: theme.spacing.lg,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(45, 64, 89, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+  },
+  modalContent: {
+    backgroundColor: theme.colors.background.primary,
+    borderRadius: theme.borderRadius.lg,
+    width: '100%',
+    maxWidth: 400,
+    borderWidth: 3,
+    borderColor: theme.colors.text.primary,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+    borderBottomWidth: 2,
+    borderBottomColor: theme.colors.text.primary,
+  },
+  modalTitle: {
+    fontSize: theme.typography.sizes.xl,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+  },
+  modalCloseButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCloseText: {
+    fontSize: 32,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+    lineHeight: 32,
+  },
+  modalBody: {
+    padding: theme.spacing.md,
+  },
+  aqiLevelsContainer: {
+    gap: theme.spacing.xs,
+  },
+  aqiLevel: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 2,
+    borderColor: theme.colors.text.primary,
+  },
+  aqiLevelText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.bold,
+  },
+  aqiLevelLabel: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
   },
 });

@@ -96,7 +96,6 @@ export const ComicCardFooter: React.FC<ComicCardFooterProps> = ({ children, styl
 const styles = StyleSheet.create({
   wrapper: {
     position: 'relative',
-    marginBottom: 16,
   },
   scribbleContainer: {
     position: 'absolute',

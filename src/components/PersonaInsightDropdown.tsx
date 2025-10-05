@@ -6,7 +6,6 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   Modal,
@@ -20,7 +19,9 @@ import {
 import { useTheme } from '../hooks/useTheme';
 import { usePersona } from '../contexts/PersonaContext';
 import { PersonaType, PersonaInsights, LiveWeatherReport } from '../types/airQuality';
+import { Text } from './ui/Text';
 import { Card, CardContent } from './ui/Card';
+import { RISK_LEVEL_COLORS } from '../constants/colors';
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -118,13 +119,13 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
 
     switch (insights.risk_assessment.level) {
       case 'low':
-        return '#10B981';
+        return RISK_LEVEL_COLORS.low;
       case 'moderate':
-        return '#F59E0B';
+        return RISK_LEVEL_COLORS.moderate;
       case 'high':
-        return '#EF4444';
+        return RISK_LEVEL_COLORS.high;
       case 'critical':
-        return '#DC2626';
+        return RISK_LEVEL_COLORS.critical;
       default:
         return theme.colors.text.secondary;
     }
@@ -177,9 +178,9 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
               {/* Live Weather Headline */}
               {liveWeatherReport && (
                 <View style={styles.liveSection}>
-                  <Text style={styles.liveHeadline}>{liveWeatherReport.headline}</Text>
+                  <Text readable bold style={styles.liveHeadline}>{liveWeatherReport.headline}</Text>
                   {liveWeatherReport.health_advisory && (
-                    <Text style={styles.healthAdvisory}>{liveWeatherReport.health_advisory}</Text>
+                    <Text readable style={styles.healthAdvisory}>{liveWeatherReport.health_advisory}</Text>
                   )}
                 </View>
               )}
@@ -189,7 +190,7 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
                 <View style={styles.mainInsight}>
                   <View style={styles.insightHeader}>
                     <View style={[styles.riskDot, { backgroundColor: getRiskColor() }]} />
-                    <Text style={styles.insightText}>{insights.immediate_action}</Text>
+                    <Text readable style={styles.insightText}>{insights.immediate_action}</Text>
                   </View>
                 </View>
               )}
@@ -213,7 +214,7 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
                   {(liveWeatherReport?.recommendations || insights?.recommendations)
                     ?.slice(0, 3)
                     .map((rec, idx) => (
-                      <Text key={idx} style={styles.recommendationCompact}>
+                      <Text readable key={idx} style={styles.recommendationCompact}>
                         • {rec}
                       </Text>
                     ))}
@@ -261,7 +262,7 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
                     >
                       {p.label}
                     </Text>
-                    <Text style={styles.personaDescription}>{p.description}</Text>
+                    <Text readable style={styles.personaDescription}>{p.description}</Text>
                   </View>
                   {persona === p.type && (
                     <View style={styles.checkmark}>
@@ -273,7 +274,7 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
             </ScrollView>
 
             <View style={styles.modalFooter}>
-              <Text style={styles.footerText}>
+              <Text readable style={styles.footerText}>
                 Changing your role will fetch personalized air quality insights
               </Text>
             </View>
@@ -313,7 +314,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     liveBadgeText: {
       fontSize: theme.typography.sizes.xs,
       fontWeight: theme.typography.weights.bold,
-      color: '#EF4444',
+      color: RISK_LEVEL_COLORS.high,
       letterSpacing: 1.2,
     },
     personaButton: {
@@ -329,7 +330,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     label: {
       fontSize: theme.typography.sizes.xs,
       fontWeight: theme.typography.weights.bold,
-      color: theme.colors.text.muted,
+      color: theme.colors.text.secondary,
       letterSpacing: 1.2,
       marginBottom: 4,
     },

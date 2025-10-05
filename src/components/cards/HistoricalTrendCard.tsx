@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Text } from '../ui/Text';
 import { Card, CardContent } from '../ui/Card';
 import { AQIReading } from '../../types/airQuality';
 import { getAQIColor } from '../../constants/aqi';
@@ -143,7 +144,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   label: {
     fontSize: 8,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.lg,
   },

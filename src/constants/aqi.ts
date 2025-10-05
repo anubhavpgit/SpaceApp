@@ -1,4 +1,5 @@
 import { AQICategory } from '../types/airQuality';
+import { AQI_LEVEL_COLORS, AQI_BG_COLORS as AQI_BACKGROUND_COLORS } from './colors';
 
 export const AQI_RANGES = {
   good: { min: 0, max: 50 },
@@ -10,22 +11,22 @@ export const AQI_RANGES = {
 } as const;
 
 export const AQI_COLORS = {
-  good: '#10B981',      // Green - good contrast
-  moderate: '#F59E0B',  // Amber/Orange - better than yellow
-  'unhealthy-sensitive': '#EF4444',  // Red-Orange
-  unhealthy: '#DC2626',  // Deep Red
-  'very-unhealthy': '#991B1B',  // Dark Red
-  hazardous: '#7F1D1D',  // Darkest Red
+  good: AQI_LEVEL_COLORS.good,
+  moderate: AQI_LEVEL_COLORS.moderate,
+  'unhealthy-sensitive': AQI_LEVEL_COLORS.unhealthySensitive,
+  unhealthy: AQI_LEVEL_COLORS.unhealthy,
+  'very-unhealthy': AQI_LEVEL_COLORS.veryUnhealthy,
+  hazardous: AQI_LEVEL_COLORS.hazardous,
 } as const;
 
 // Background colors for cards (softer versions)
 export const AQI_BG_COLORS = {
-  good: 'rgba(16, 185, 129, 0.1)',
-  moderate: 'rgba(245, 158, 11, 0.1)',
-  'unhealthy-sensitive': 'rgba(239, 68, 68, 0.1)',
-  unhealthy: 'rgba(220, 38, 38, 0.15)',
-  'very-unhealthy': 'rgba(153, 27, 27, 0.15)',
-  hazardous: 'rgba(127, 29, 29, 0.2)',
+  good: AQI_BACKGROUND_COLORS.good,
+  moderate: AQI_BACKGROUND_COLORS.moderate,
+  'unhealthy-sensitive': AQI_BACKGROUND_COLORS.unhealthySensitive,
+  unhealthy: AQI_BACKGROUND_COLORS.unhealthy,
+  'very-unhealthy': AQI_BACKGROUND_COLORS.veryUnhealthy,
+  hazardous: AQI_BACKGROUND_COLORS.hazardous,
 } as const;
 
 export const AQI_LABELS = {

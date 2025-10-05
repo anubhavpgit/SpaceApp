@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Text } from '../ui/Text';
 import { Card, CardContent } from '../ui/Card';
 import { WeatherData } from '../../types/airQuality';
 import { useTheme } from '../../hooks/useTheme';
@@ -80,7 +81,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   label: {
     fontSize: 10,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },

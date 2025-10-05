@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   PanResponder,
   Animated,
   Dimensions,
 } from 'react-native';
+import { Text } from './Text';
 import { ForecastItem } from '../../types/airQuality';
 import { getAQIColor } from '../../constants/aqi';
 import { useTheme } from '../../hooks/useTheme';

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { useSwrDashboard } from '../hooks/useSwrDashboard';
+import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
 
 interface AISummary {
@@ -71,20 +72,20 @@ export default function WeatherDetailScreen({ route }: any) {
           <Card variant="elevated" style={styles.aiCard}>
             <CardContent style={styles.aiContent}>
               <Text style={styles.aiLabel}>AI WEATHER INSIGHT</Text>
-              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              <Text readable style={styles.aiBrief}>{aiSummary.brief}</Text>
               {aiSummary.detailed && (
-                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+                <Text readable style={styles.aiDetailed}>{aiSummary.detailed}</Text>
               )}
               {aiSummary.impact && (
                 <View style={styles.impactBox}>
                   <Text style={styles.impactLabel}>IMPACT ON AIR QUALITY</Text>
-                  <Text style={styles.impactText}>{aiSummary.impact}</Text>
+                  <Text readable style={styles.impactText}>{aiSummary.impact}</Text>
                 </View>
               )}
               {aiSummary.recommendation && (
                 <View style={styles.recommendationBox}>
                   <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
-                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                  <Text readable style={styles.recommendationText}>{aiSummary.recommendation}</Text>
                 </View>
               )}
               {aiSummary.uvAlert && (
@@ -123,7 +124,7 @@ export default function WeatherDetailScreen({ route }: any) {
         <Card variant="elevated" style={styles.card}>
           <CardContent style={styles.cardContent}>
             <Text style={styles.impactTitle}>Weather Conditions</Text>
-            <Text style={styles.impactText}>
+            <Text readable style={styles.impactText}>
               Current wind conditions ({Math.round(weather.windSpeed)} km/h) are helping to disperse pollutants,
               leading to better air quality. Low humidity ({Math.round(weather.humidity)}%) reduces the
               formation of secondary pollutants.
@@ -149,7 +150,7 @@ export default function WeatherDetailScreen({ route }: any) {
                 <Text style={[styles.uvBadgeText, { color: '#F59E0B' }]}>High</Text>
               </View>
             </View>
-            <Text style={styles.uvText}>
+            <Text readable style={styles.uvText}>
               Protection required. Seek shade during midday hours. Wear sunscreen and protective clothing.
             </Text>
           </CardContent>
@@ -308,18 +309,19 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   sectionTitle: {
     fontSize: 10,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: theme.spacing.md,
+    justifyContent: 'space-between',
     marginBottom: theme.spacing.xl,
   },
   metricCard: {
     width: '48%',
+    marginBottom: theme.spacing.md,
   },
   metricContent: {
     paddingVertical: theme.spacing.lg,

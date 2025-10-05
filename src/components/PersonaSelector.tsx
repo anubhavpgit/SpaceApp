@@ -8,7 +8,7 @@ import { View, StyleSheet, TouchableOpacity, Modal, ScrollView, Pressable } from
 import { useTheme } from '../hooks/useTheme';
 import { usePersona } from '../contexts/PersonaContext';
 import { PersonaType } from '../types/airQuality';
-import { ScribbleText } from './scribble/ScribbleText';
+import { Text } from './ui/Text';
 
 const PERSONAS: Array<{ type: PersonaType; label: string; description: string }> = [
   {
@@ -88,16 +88,16 @@ export const PersonaSelector: React.FC = () => {
         activeOpacity={0.7}
       >
         <View style={styles.selectorContent}>
-          <ScribbleText size="xs" weight="bold" color={theme.colors.text.muted} style={styles.label}>
+          <Text bold style={[styles.label, { color: theme.colors.text.secondary, fontSize: theme.typography.sizes.xs }]}>
             YOUR ROLE
-          </ScribbleText>
-          <ScribbleText size="base" weight="bold" color={theme.colors.text.primary}>
+          </Text>
+          <Text bold style={{ color: theme.colors.text.primary, fontSize: theme.typography.sizes.base }}>
             {selectedPersonaLabel}
-          </ScribbleText>
+          </Text>
         </View>
-        <ScribbleText size="xl" weight="regular" color={theme.colors.text.secondary}>
+        <Text style={{ color: theme.colors.text.secondary, fontSize: theme.typography.sizes.xl }}>
           ›
-        </ScribbleText>
+        </Text>
       </TouchableOpacity>
 
       {/* Modal for persona selection */}
@@ -111,13 +111,13 @@ export const PersonaSelector: React.FC = () => {
           <Pressable style={styles.modalBackdrop} onPress={() => setModalVisible(false)} />
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <ScribbleText size="xl" weight="bold" color={theme.colors.text.primary}>
+              <Text bold style={{ color: theme.colors.text.primary, fontSize: theme.typography.sizes.xl }}>
                 Select Your Role
-              </ScribbleText>
+              </Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-                <ScribbleText size="xxl" weight="regular" color={theme.colors.text.secondary}>
+                <Text style={{ color: theme.colors.text.secondary, fontSize: theme.typography.sizes.xxl }}>
                   ✕
-                </ScribbleText>
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -133,23 +133,21 @@ export const PersonaSelector: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <View style={styles.personaOptionContent}>
-                    <ScribbleText
-                      size="base"
-                      weight={persona === p.type ? "bold" : "bold"}
-                      color={theme.colors.text.primary}
-                      style={styles.personaLabel}
+                    <Text
+                      bold
+                      style={[styles.personaLabel, { color: theme.colors.text.primary, fontSize: theme.typography.sizes.base }]}
                     >
                       {p.label}
-                    </ScribbleText>
-                    <ScribbleText size="sm" color={theme.colors.text.tertiary} style={styles.personaDescription}>
+                    </Text>
+                    <Text style={[styles.personaDescription, { color: theme.colors.text.tertiary, fontSize: theme.typography.sizes.sm }]}>
                       {p.description}
-                    </ScribbleText>
+                    </Text>
                   </View>
                   {persona === p.type && (
                     <View style={styles.checkmark}>
-                      <ScribbleText size="base" weight="bold" color={theme.colors.background.primary}>
+                      <Text bold style={{ color: theme.colors.background.primary, fontSize: theme.typography.sizes.base }}>
                         ✓
-                      </ScribbleText>
+                      </Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -157,9 +155,9 @@ export const PersonaSelector: React.FC = () => {
             </ScrollView>
 
             <View style={styles.modalFooter}>
-              <ScribbleText size="xs" color={theme.colors.text.tertiary} style={styles.footerText}>
+              <Text style={[styles.footerText, { color: theme.colors.text.tertiary, fontSize: theme.typography.sizes.xs }]}>
                 Changing your role will fetch personalized air quality insights
-              </ScribbleText>
+              </Text>
             </View>
           </View>
         </View>

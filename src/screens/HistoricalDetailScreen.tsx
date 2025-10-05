@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { useLocation } from '../contexts/LocationContext';
 import { airQualityAPI } from '../api/client';
+import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
 import { getAQIColor } from '../constants/aqi';
 import { AQIReading } from '../types/airQuality';
@@ -152,26 +153,26 @@ export default function HistoricalDetailScreen() {
           <Card variant="elevated" style={styles.aiCard}>
             <CardContent style={styles.aiContent}>
               <Text style={styles.aiLabel}>AI TREND ANALYSIS</Text>
-              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              <Text readable style={styles.aiBrief}>{aiSummary.brief}</Text>
               {aiSummary.detailed && (
-                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+                <Text readable style={styles.aiDetailed}>{aiSummary.detailed}</Text>
               )}
               {aiSummary.trendAnalysis && (
                 <View style={styles.analysisBox}>
                   <Text style={styles.analysisLabel}>TREND ANALYSIS</Text>
-                  <Text style={styles.analysisText}>{aiSummary.trendAnalysis}</Text>
+                  <Text readable style={styles.analysisText}>{aiSummary.trendAnalysis}</Text>
                 </View>
               )}
               {aiSummary.pattern && (
                 <View style={styles.patternBox}>
                   <Text style={styles.patternLabel}>PATTERN DETECTED</Text>
-                  <Text style={styles.patternText}>{aiSummary.pattern}</Text>
+                  <Text readable style={styles.patternText}>{aiSummary.pattern}</Text>
                 </View>
               )}
               {aiSummary.recommendation && (
                 <View style={styles.recommendationBox}>
                   <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
-                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                  <Text readable style={styles.recommendationText}>{aiSummary.recommendation}</Text>
                 </View>
               )}
             </CardContent>
@@ -315,7 +316,7 @@ export default function HistoricalDetailScreen() {
             <Text style={styles.analysisTitle}>
               {selectedPeriod === '7d' ? '7-Day' : selectedPeriod === '30d' ? '30-Day' : '90-Day'} Summary
             </Text>
-            <Text style={styles.analysisText}>
+            <Text readable style={styles.analysisText}>
               Air quality has {isImproving ? 'improved' : 'worsened'} by{' '}
               {Math.abs(trendPercent ?? 0).toFixed(1)}% over the past {selectedPeriod === '7d' ? 'week' : selectedPeriod === '30d' ? 'month' : '3 months'}. The average AQI was {avgAQI},
               with values ranging from {minAQI} to {maxAQI}. The best air quality was recorded on{' '}
@@ -387,7 +388,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   aiLabel: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },
@@ -589,7 +590,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   sectionTitle: {
     fontSize: 10,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },

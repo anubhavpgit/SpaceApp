@@ -1,68 +1,41 @@
-// Pastel Comic/Cartoon Color Palette
+import {
+  BACKGROUND_COLORS,
+  TEXT_COLORS,
+  ACCENT_COLORS,
+  PASTEL_COLORS,
+  createBorderColors,
+  createOverlayColors,
+} from './colors';
+
+// Light mode colors
 const lightColors = {
-  background: {
-    primary: '#FFF8E7',      // Soft cream yellow
-    secondary: '#FFE5D9',    // Peachy pastel
-    tertiary: '#E8F3F1',     // Mint pastel
-    elevated: '#FFFBF5',     // Light cream
-  },
-  text: {
-    primary: '#2D4059',      // Deep blue-gray for comic text
-    secondary: '#5F6F81',    // Medium blue-gray
-    tertiary: '#8B95A5',     // Light blue-gray
-    inverse: '#FFFFFF',
-    muted: '#A8B4C3',        // Soft gray
-  },
-  border: {
-    light: 'rgba(45, 64, 89, 0.1)',
-    medium: 'rgba(45, 64, 89, 0.2)',
-    strong: 'rgba(45, 64, 89, 0.3)',
-  },
+  background: BACKGROUND_COLORS.light,
+  text: TEXT_COLORS.light,
+  border: createBorderColors(PASTEL_COLORS.deepBlueGray),
   overlay: {
-    light: 'rgba(255, 248, 231, 0.5)',
-    medium: 'rgba(255, 248, 231, 0.7)',
-    dark: 'rgba(45, 64, 89, 0.15)',
+    light: createOverlayColors(PASTEL_COLORS.cream).light,
+    medium: createOverlayColors(PASTEL_COLORS.cream).medium,
+    dark: createOverlayColors(PASTEL_COLORS.deepBlueGray).dark,
   },
-  accent: {
-    primary: '#FF6B9D',      // Pink pastel (like lighthouse stripes)
-    secondary: '#4ECDC4',    // Teal pastel (like lighthouse blue)
-    yellow: '#FFD93D',       // Golden yellow (like lighthouse light)
-    orange: '#FF8B6A',       // Coral orange
-    blue: '#6BCF7F',         // Seafoam green
-  },
+  accent: ACCENT_COLORS,
 };
 
-// Dark mode with softer pastels
+// Dark mode colors
 const darkColors = {
-  background: {
-    primary: '#1A1A2E',      // Deep navy
-    secondary: '#16213E',    // Dark slate blue
-    tertiary: '#0F3460',     // Medium navy
-    elevated: '#1E2A47',     // Elevated navy
-  },
-  text: {
-    primary: '#F4F4F9',      // Soft white
-    secondary: '#C7D3DD',    // Light blue-gray
-    tertiary: '#8F9BB3',     // Medium gray-blue
-    inverse: '#1A1A2E',
-    muted: '#7A8CA0',        // Muted blue-gray
-  },
-  border: {
-    light: 'rgba(199, 211, 221, 0.1)',
-    medium: 'rgba(199, 211, 221, 0.2)',
-    strong: 'rgba(199, 211, 221, 0.3)',
-  },
+  background: BACKGROUND_COLORS.dark,
+  text: TEXT_COLORS.dark,
+  border: createBorderColors(PASTEL_COLORS.lightBlueyGray),
   overlay: {
-    light: 'rgba(26, 26, 46, 0.5)',
-    medium: 'rgba(26, 26, 46, 0.7)',
-    dark: 'rgba(199, 211, 221, 0.15)',
+    light: createOverlayColors(PASTEL_COLORS.darkNavy).light,
+    medium: createOverlayColors(PASTEL_COLORS.darkNavy).medium,
+    dark: createOverlayColors(PASTEL_COLORS.lightBlueyGray).dark,
   },
   accent: {
-    primary: '#FF85A1',      // Bright pink pastel
-    secondary: '#67E8D9',    // Bright teal
-    yellow: '#FFE66D',       // Bright yellow
-    orange: '#FFA384',       // Bright coral
-    blue: '#7FE8A3',         // Bright seafoam
+    primary: PASTEL_COLORS.lightPink,
+    secondary: PASTEL_COLORS.brightTeal,
+    yellow: PASTEL_COLORS.golden,
+    orange: PASTEL_COLORS.orange,
+    blue: PASTEL_COLORS.seafoam,
   },
 };
 
@@ -118,35 +91,35 @@ export const createTheme = (isDark: boolean) => ({
   // Softer, more cartoon-like shadows
   shadows: {
     none: {
-      shadowColor: 'transparent',
+      shadowColor: PASTEL_COLORS.transparent,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0,
       shadowRadius: 0,
       elevation: 0,
     },
     sm: {
-      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowColor: isDark ? PASTEL_COLORS.black : PASTEL_COLORS.deepBlueGray,
       shadowOffset: { width: 2, height: 3 },
       shadowOpacity: 0.1,
       shadowRadius: 4,
       elevation: 3,
     },
     md: {
-      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowColor: isDark ? PASTEL_COLORS.black : PASTEL_COLORS.deepBlueGray,
       shadowOffset: { width: 3, height: 5 },
       shadowOpacity: 0.12,
       shadowRadius: 8,
       elevation: 5,
     },
     lg: {
-      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowColor: isDark ? PASTEL_COLORS.black : PASTEL_COLORS.deepBlueGray,
       shadowOffset: { width: 4, height: 8 },
       shadowOpacity: 0.15,
       shadowRadius: 12,
       elevation: 8,
     },
     xl: {
-      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowColor: isDark ? PASTEL_COLORS.black : PASTEL_COLORS.deepBlueGray,
       shadowOffset: { width: 5, height: 10 },
       shadowOpacity: 0.18,
       shadowRadius: 16,

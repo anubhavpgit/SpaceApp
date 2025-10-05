@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
+import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
 import { HealthAlert } from '../types/airQuality';
 
@@ -64,7 +65,7 @@ export default function HealthAlertDetailScreen() {
             </View>
 
             <Text style={[styles.alertTitle, { color: config.color }]}>{alert.title}</Text>
-            <Text style={styles.alertMessage}>{alert.message}</Text>
+            <Text readable style={styles.alertMessage}>{alert.message}</Text>
 
             <View style={styles.affectedGroupsContainer}>
               <Text style={styles.affectedGroupsLabel}>Affected Groups:</Text>
@@ -87,7 +88,7 @@ export default function HealthAlertDetailScreen() {
               <View style={styles.recNumber}>
                 <Text style={styles.recNumberText}>{index + 1}</Text>
               </View>
-              <Text style={styles.recText}>{measure}</Text>
+              <Text readable style={styles.recText}>{measure}</Text>
             </CardContent>
           </Card>
         ))}
@@ -98,11 +99,11 @@ export default function HealthAlertDetailScreen() {
           <CardContent style={styles.cardContent}>
             <Text style={styles.helpTitle}>Seek Immediate Medical Attention If:</Text>
             <View style={styles.helpList}>
-              <Text style={styles.helpItem}>• Severe difficulty breathing</Text>
-              <Text style={styles.helpItem}>• Chest pain or pressure</Text>
-              <Text style={styles.helpItem}>• Persistent coughing or wheezing</Text>
-              <Text style={styles.helpItem}>• Dizziness or confusion</Text>
-              <Text style={styles.helpItem}>• Blue lips or fingernails</Text>
+              <Text readable style={styles.helpItem}>• Severe difficulty breathing</Text>
+              <Text readable style={styles.helpItem}>• Chest pain or pressure</Text>
+              <Text readable style={styles.helpItem}>• Persistent coughing or wheezing</Text>
+              <Text readable style={styles.helpItem}>• Dizziness or confusion</Text>
+              <Text readable style={styles.helpItem}>• Blue lips or fingernails</Text>
             </View>
 
             <TouchableOpacity style={styles.emergencyButton}>

@@ -5,13 +5,14 @@
  * @format
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar, useColorScheme, View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SWRConfig } from 'swr';
+import * as SplashScreen from 'expo-splash-screen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import GlobeScreen from './src/screens/GlobeScreen';
 import AirQualityDetailScreen from './src/screens/AirQualityDetailScreen';
@@ -23,6 +24,9 @@ import { LocationProvider } from './src/contexts/LocationContext';
 import { PersonaProvider } from './src/contexts/PersonaContext';
 import { swrConfig } from './src/config/swr';
 import { useFonts } from './src/hooks/useFonts';
+
+// Prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
 const Stack = createStackNavigator();
 
@@ -61,19 +65,19 @@ function AppNavigator() {
 }
 
 function App() {
-  const { fontsLoaded } = useFonts();
+  const { fontsLoaded, error } = useFonts();
   const colorScheme = useColorScheme();
 
-  // Show loading screen while fonts load
-  if (!fontsLoaded) {
-    const backgroundColor = colorScheme === 'dark' ? '#1A1A2E' : '#FFF8E7';
-    const spinnerColor = colorScheme === 'dark' ? '#FF85A1' : '#FF6B9D';
+  useEffect(() => {
+    if (fontsLoaded || error) {
+      // Hide the splash screen once fonts are loaded or if there's an error
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, error]);
 
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor }}>
-        <ActivityIndicator size="large" color={spinnerColor} />
-      </View>
-    );
+  // Keep showing splash screen while fonts load
+  if (!fontsLoaded && !error) {
+    return null;
   }
 
   return (

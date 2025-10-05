@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Text } from '../ui/Text';
 import { Card, CardContent } from '../ui/Card';
 import { HealthAlert } from '../../types/airQuality';
 import { useTheme } from '../../hooks/useTheme';
+import { ALERT_SEVERITY_COLORS, ALERT_SEVERITY_BG_COLORS } from '../../constants/colors';
 
 interface HealthAlertCardProps {
   alert: HealthAlert;
@@ -15,9 +17,9 @@ export const HealthAlertCard: React.FC<HealthAlertCardProps> = ({ alert }) => {
   const styles = createStyles(theme);
 
   const severityConfig = {
-    info: { color: theme.colors.text.secondary, bgColor: theme.colors.overlay.medium },
-    warning: { color: '#F59E0B', bgColor: 'rgba(245, 158, 11, 0.08)' },
-    critical: { color: '#DC2626', bgColor: 'rgba(220, 38, 38, 0.08)' },
+    info: { color: ALERT_SEVERITY_COLORS.info, bgColor: ALERT_SEVERITY_BG_COLORS.info },
+    warning: { color: ALERT_SEVERITY_COLORS.warning, bgColor: ALERT_SEVERITY_BG_COLORS.warning },
+    critical: { color: ALERT_SEVERITY_COLORS.critical, bgColor: ALERT_SEVERITY_BG_COLORS.critical },
   };
 
   const config = severityConfig[alert.severity];
@@ -33,7 +35,7 @@ export const HealthAlertCard: React.FC<HealthAlertCardProps> = ({ alert }) => {
             <View style={[styles.indicator, { backgroundColor: config.color }]} />
             <View style={styles.textContainer}>
               <Text style={[styles.title, { color: config.color }]}>{alert.title}</Text>
-              <Text style={styles.message} numberOfLines={2}>{alert.message}</Text>
+              <Text readable style={styles.message} numberOfLines={2}>{alert.message}</Text>
             </View>
           </View>
         </CardContent>

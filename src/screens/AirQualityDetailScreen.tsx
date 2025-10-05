@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
+import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
 import { POLLUTANT_INFO } from '../constants/aqi';
 import { Pollutants } from '../types/airQuality';
@@ -109,26 +110,26 @@ export default function AirQualityDetailScreen() {
           <Card variant="elevated" style={styles.aiCard}>
             <CardContent style={styles.aiContent}>
               <Text style={styles.aiLabel}>AI AIR QUALITY INSIGHT</Text>
-              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              <Text readable style={styles.aiBrief}>{aiSummary.brief}</Text>
               {aiSummary.detailed && (
-                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+                <Text readable style={styles.aiDetailed}>{aiSummary.detailed}</Text>
               )}
               {aiSummary.healthImpact && (
                 <View style={styles.healthBox}>
                   <Text style={styles.healthLabel}>HEALTH IMPACT</Text>
-                  <Text style={styles.healthText}>{aiSummary.healthImpact}</Text>
+                  <Text readable style={styles.healthText}>{aiSummary.healthImpact}</Text>
                 </View>
               )}
               {aiSummary.dominantPollutant && (
                 <View style={styles.pollutantBox}>
                   <Text style={styles.pollutantLabel}>DOMINANT POLLUTANT</Text>
-                  <Text style={styles.pollutantText}>{aiSummary.dominantPollutant}</Text>
+                  <Text readable style={styles.pollutantText}>{aiSummary.dominantPollutant}</Text>
                 </View>
               )}
               {aiSummary.recommendation && (
                 <View style={styles.recommendationBox}>
                   <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
-                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                  <Text readable style={styles.recommendationText}>{aiSummary.recommendation}</Text>
                 </View>
               )}
             </CardContent>
@@ -177,7 +178,7 @@ export default function AirQualityDetailScreen() {
                 <Text style={styles.sourceValueBold}>{dataSources.aggregated.aqi}</Text>
               </View>
 
-              <Text style={styles.sourceNote}>
+              <Text readable style={styles.sourceNote}>
                 Data combined from {dataSources.tempo.available ? 'NASA TEMPO satellite' : ''}
                 {dataSources.tempo.available && dataSources.ground.available ? ' and ' : ''}
                 {dataSources.ground.available ? 'ground-based sensors' : ''} for accuracy
@@ -215,7 +216,7 @@ export default function AirQualityDetailScreen() {
                   </Text>
                 </View>
 
-                <Text style={styles.pollutantDescription}>{info.description}</Text>
+                <Text readable style={styles.pollutantDescription}>{info.description}</Text>
               </CardContent>
             </Card>
           );
@@ -281,7 +282,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   aiLabel: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },
@@ -366,7 +367,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   sectionTitle: {
     fontSize: 10,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginTop: theme.spacing.lg,
     marginBottom: theme.spacing.md,

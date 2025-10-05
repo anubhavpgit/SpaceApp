@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
+import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
 import { getAQIColor } from '../constants/aqi';
 
@@ -52,14 +53,14 @@ export default function ForecastDetailScreen() {
           <Card variant="elevated" style={styles.aiCard}>
             <CardContent style={styles.aiContent}>
               <Text style={styles.aiLabel}>AI FORECAST INSIGHT</Text>
-              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              <Text readable style={styles.aiBrief}>{aiSummary.brief}</Text>
               {aiSummary.detailed && (
-                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+                <Text readable style={styles.aiDetailed}>{aiSummary.detailed}</Text>
               )}
               {aiSummary.trend && (
                 <View style={styles.trendBox}>
                   <Text style={styles.trendLabel}>TREND ANALYSIS</Text>
-                  <Text style={styles.trendText}>{aiSummary.trend}</Text>
+                  <Text readable style={styles.trendText}>{aiSummary.trend}</Text>
                 </View>
               )}
               {(aiSummary.bestTime || aiSummary.worstTime) && (
@@ -81,7 +82,7 @@ export default function ForecastDetailScreen() {
               {aiSummary.recommendation && (
                 <View style={styles.recommendationBox}>
                   <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
-                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                  <Text readable style={styles.recommendationText}>{aiSummary.recommendation}</Text>
                 </View>
               )}
             </CardContent>
@@ -128,15 +129,15 @@ export default function ForecastDetailScreen() {
           <CardContent style={styles.cardContent}>
             <View style={styles.insightRow}>
               <View style={[styles.insightDot, { backgroundColor: '#10B981' }]} />
-              <Text style={styles.insightText}>Best air quality expected at 3:00 PM (AQI 45)</Text>
+              <Text readable style={styles.insightText}>Best air quality expected at 3:00 PM (AQI 45)</Text>
             </View>
             <View style={styles.insightRow}>
               <View style={[styles.insightDot, { backgroundColor: '#EF4444' }]} />
-              <Text style={styles.insightText}>Highest pollution at 8:00 AM (AQI 85)</Text>
+              <Text readable style={styles.insightText}>Highest pollution at 8:00 AM (AQI 85)</Text>
             </View>
             <View style={styles.insightRow}>
               <View style={[styles.insightDot, { backgroundColor: '#F59E0B' }]} />
-              <Text style={styles.insightText}>
+              <Text readable style={styles.insightText}>
                 Wind patterns suggest gradual improvement throughout the day
               </Text>
             </View>
@@ -202,7 +203,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   aiLabel: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },
@@ -308,7 +309,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   sectionTitle: {
     fontSize: 10,
     fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.muted,
+    color: theme.colors.text.secondary,
     letterSpacing: 1.2,
     marginBottom: theme.spacing.md,
   },

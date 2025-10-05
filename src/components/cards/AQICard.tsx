@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, CardHeader, CardContent } from '../ui/Card';
-import { ScribbleText } from '../scribble/ScribbleText';
+import { Text } from '../ui/Text';
 import { AQIReading } from '../../types/airQuality';
 import { getAQIColor, getAQILabel, AQI_LABELS } from '../../constants/aqi';
 import { theme } from '../../constants/theme';
@@ -17,39 +17,39 @@ export const AQICard: React.FC<AQICardProps> = ({ data }) => {
   return (
     <Card variant="elevated" style={styles.card}>
       <CardHeader>
-        <ScribbleText size="xs" weight="bold" color={theme.colors.text.muted} style={styles.title}>
+        <Text bold style={[styles.title, { color: theme.colors.text.secondary }]}>
           AIR QUALITY INDEX
-        </ScribbleText>
-        <ScribbleText size="xxl" weight="regular" style={styles.location}>
+        </Text>
+        <Text style={styles.location}>
           {data.location.city}
-        </ScribbleText>
+        </Text>
       </CardHeader>
 
       <CardContent style={styles.content}>
         <View style={styles.aqiContainer}>
           <View style={[styles.aqiIndicator, { backgroundColor: color }]}>
-            <ScribbleText size="xxxl" weight="bold" color={theme.colors.text.inverse} style={styles.aqiValue}>
+            <Text bold style={[styles.aqiValue, { color: theme.colors.text.inverse }]}>
               {data.aqi}
-            </ScribbleText>
+            </Text>
           </View>
           <View style={styles.aqiInfo}>
-            <ScribbleText size="lg" weight="regular" color={color} style={styles.aqiLabel}>
+            <Text style={[styles.aqiLabel, { color }]}>
               {label}
-            </ScribbleText>
-            <ScribbleText size="sm" weight="regular" color={theme.colors.text.muted}>
+            </Text>
+            <Text style={{ color: theme.colors.text.muted, fontSize: theme.typography.sizes.sm }}>
               Updated {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </ScribbleText>
+            </Text>
           </View>
         </View>
 
         {data.dominantPollutant && (
           <View style={styles.dominantPollutant}>
-            <ScribbleText size="sm" color={theme.colors.text.tertiary}>
+            <Text style={{ color: theme.colors.text.tertiary, fontSize: theme.typography.sizes.sm }}>
               Dominant Pollutant
-            </ScribbleText>
-            <ScribbleText size="base" weight="bold" color={theme.colors.text.primary}>
+            </Text>
+            <Text bold style={{ color: theme.colors.text.primary, fontSize: theme.typography.sizes.base }}>
               {data.dominantPollutant.toUpperCase()}
-            </ScribbleText>
+            </Text>
           </View>
         )}
       </CardContent>
@@ -65,9 +65,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     marginBottom: theme.spacing.sm,
+    fontSize: theme.typography.sizes.xs,
   },
   location: {
     letterSpacing: -0.3,
+    fontSize: theme.typography.sizes.xxl,
   },
   content: {
     paddingTop: theme.spacing.xl,
@@ -88,12 +90,14 @@ const styles = StyleSheet.create({
   },
   aqiValue: {
     letterSpacing: -0.5,
+    fontSize: theme.typography.sizes.xxxl,
   },
   aqiInfo: {
     flex: 1,
   },
   aqiLabel: {
     marginBottom: theme.spacing.xs,
+    fontSize: theme.typography.sizes.lg,
   },
   dominantPollutant: {
     flexDirection: 'row',

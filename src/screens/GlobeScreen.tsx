@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { Text } from '../components/ui/Text';
 import BlackWhiteGlobe from '../../components/BlackWhiteGlobe';
 
 export default function GlobeScreen() {
