@@ -92,9 +92,11 @@ const transformDashboardData = (response: any): DashboardData => {
 
   // Transform forecast data
   const forecastData = response.forecast24h?.raw;
+  const hourlyData = forecastData?.hourly || [];
+
   const forecast: AirQualityForecast = {
     location: response.location,
-    forecasts: (forecastData?.hourly || []).map((item: any) => ({
+    forecasts: hourlyData.map((item: any) => ({
       timestamp: new Date(item.timestamp),
       aqi: item.aqi,
       category: item.category,

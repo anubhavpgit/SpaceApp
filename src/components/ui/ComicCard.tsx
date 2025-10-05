@@ -26,16 +26,23 @@ export const ComicCard: React.FC<ComicCardProps> = ({
   const cardStyle: ViewStyle = {
     backgroundColor: backgroundColor || theme.colors.background.elevated,
     borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
     overflow: 'hidden',
     ...(variant === 'elevated' ? theme.shadows.lg : {}),
+  };
+
+  const innerContentStyle: ViewStyle = {
+    padding: theme.spacing.lg,
+    overflow: 'hidden', // Prevent any child overflow
   };
 
   return (
     <View style={[styles.wrapper, style]}>
       {/* The actual card content */}
       <View style={cardStyle}>
-        {children}
+        {/* Inner content container with padding and flex constraints */}
+        <View style={innerContentStyle}>
+          {children}
+        </View>
       </View>
 
       {/* Hand-drawn scribble border overlay */}

@@ -14,7 +14,7 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
   forecasts,
   title = '24-Hour Forecast',
 }) => {
-  const hourlyForecasts = forecasts.slice(0, 12); // Show next 12 hours
+  const hourlyForecasts = forecasts.slice(0, 24); // Show next 24 hours
 
   return (
     <Card variant="elevated" style={styles.card}>
@@ -31,6 +31,8 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
           snapToInterval={76}
           snapToAlignment="start"
           scrollEventThrottle={16}
+          nestedScrollEnabled={false}
+          directionalLockEnabled={true}
         >
           {hourlyForecasts.map((forecast, index) => {
             const color = getAQIChartColor(forecast.category);

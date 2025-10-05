@@ -133,7 +133,7 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
 
   return (
     <View style={styles.container}>
-      <Card variant="elevated" style={[styles.card, isChangingPersona && styles.cardDisabled]}>
+      <Card variant="elevated" style={[styles.card, showLoader && styles.cardDisabled]}>
         <CardContent style={styles.cardContent}>
           {/* Header - Always Visible */}
           <View style={styles.header}>
@@ -145,9 +145,9 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
 
             <TouchableOpacity
               style={styles.personaButton}
-              onPress={() => !isChangingPersona && setModalVisible(true)}
+              onPress={() => !showLoader && setModalVisible(true)}
               activeOpacity={0.7}
-              disabled={isChangingPersona}
+              disabled={showLoader}
             >
               <View style={styles.personaInfo}>
                 <Text style={styles.label}>YOUR ROLE</Text>

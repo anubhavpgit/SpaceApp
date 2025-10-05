@@ -69,9 +69,15 @@ export const ScribbleCard: React.FC<ScribbleCardProps> = ({
     style,
   ];
 
+  const innerContentStyle: ViewStyle = {
+    padding: 18,
+    overflow: 'hidden', // Prevent any child overflow
+    zIndex: 1,
+  };
+
   return (
     <Animated.View style={cardStyle}>
-      <View style={styles.innerContent}>
+      <View style={innerContentStyle}>
         {children}
       </View>
       {/* Scribble border overlay */}
@@ -90,11 +96,7 @@ export const ScribbleCard: React.FC<ScribbleCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     overflow: 'hidden', // Clip to rounded corners
-    padding: 18,
     position: 'relative',
-  },
-  innerContent: {
-    zIndex: 1,
   },
   borderContainer: {
     position: 'absolute',

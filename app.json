@@ -1,6 +1,30 @@
 {
   "name": "LightHouse",
   "displayName": "LightHouse",
+  "expo": {
+    "name": "LightHouse",
+    "slug": "lighthouse",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/AppIcons/appstore.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/AppIcons/appstore.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFF8E7"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lighthouse.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/AppIcons/playstore.png",
+        "backgroundColor": "#FFF8E7"
+      },
+      "package": "com.lighthouse.app"
+    }
+  },
   "plugins": [
     "expo-font"
   ]

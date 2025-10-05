@@ -7,7 +7,7 @@ import { useLocation } from '../contexts/LocationContext';
 import { airQualityAPI } from '../api/client';
 import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
-import { getAQIChartColor } from '../constants/aqi';
+import { getAQIChartColor, getAQIColor } from '../constants/aqi';
 import { AQIReading } from '../types/airQuality';
 
 interface AISummary {

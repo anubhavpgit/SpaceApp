@@ -15,6 +15,7 @@ import { SWRConfig } from 'swr';
 import * as SplashScreen from 'expo-splash-screen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import GlobeScreen from './src/screens/GlobeScreen';
+import SplashScreenComponent from './src/screens/SplashScreen';
 import AirQualityDetailScreen from './src/screens/AirQualityDetailScreen';
 import WeatherDetailScreen from './src/screens/WeatherDetailScreen';
 import ForecastDetailScreen from './src/screens/ForecastDetailScreen';
@@ -75,9 +76,9 @@ function App() {
     }
   }, [fontsLoaded, error]);
 
-  // Keep showing splash screen while fonts load
+  // Keep showing custom splash screen while fonts load
   if (!fontsLoaded && !error) {
-    return null;
+    return <SplashScreenComponent />;
   }
 
   return (

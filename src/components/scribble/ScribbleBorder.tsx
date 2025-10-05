@@ -2,7 +2,7 @@
  * ScribbleBorder Component
  * Renders a hand-drawn, scribbled border using SVG with automatic sizing
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { generateScribblePath } from '../../utils/scribbleEffects';
@@ -29,31 +29,38 @@ export const ScribbleBorder: React.FC<ScribbleBorderProps> = ({
     setDimensions({ width, height });
   };
 
+  // Memoize paths so they only regenerate when dimensions change
+  const paths = useMemo(() => {
+    if (dimensions.width === 0 || dimensions.height === 0) {
+      return { path1: '', path2: '' };
+    }
+
+    return {
+      path1: generateScribblePath(
+        dimensions.width,
+        dimensions.height,
+        roughness,
+        borderRadius
+      ),
+      path2: generateScribblePath(
+        dimensions.width,
+        dimensions.height,
+        roughness * 0.8, // Slightly less rough for second stroke
+        borderRadius
+      ),
+    };
+  }, [dimensions.width, dimensions.height, roughness, borderRadius]);
+
   if (dimensions.width === 0 || dimensions.height === 0) {
     return <View style={[styles.container, style]} onLayout={handleLayout} />;
   }
-
-  const path = generateScribblePath(
-    dimensions.width,
-    dimensions.height,
-    roughness,
-    borderRadius
-  );
-
-  // Generate a second path for double-stroke hand-drawn effect
-  const path2 = generateScribblePath(
-    dimensions.width,
-    dimensions.height,
-    roughness * 0.8, // Slightly less rough for second stroke
-    borderRadius
-  );
 
   return (
     <View style={[styles.container, style]} onLayout={handleLayout}>
       <Svg width={dimensions.width} height={dimensions.height} style={styles.svg}>
         {/* First stroke - main scribble */}
         <Path
-          d={path}
+          d={paths.path1}
           stroke={color}
           strokeWidth={strokeWidth}
           fill="none"
@@ -63,7 +70,7 @@ export const ScribbleBorder: React.FC<ScribbleBorderProps> = ({
         />
         {/* Second stroke - subtle hand-drawn layer */}
         <Path
-          d={path2}
+          d={paths.path2}
           stroke={color}
           strokeWidth={strokeWidth * 0.5}
           fill="none"

@@ -31,7 +31,11 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only capture horizontal movement to prevent blocking vertical scroll
+        const isHorizontal = Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+        return isHorizontal;
+      },
       onPanResponderGrant: () => {
         Animated.spring(scaleAnim, {
           toValue: 1.1,
@@ -39,6 +43,11 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
         }).start();
       },
       onPanResponderMove: (_, gestureState) => {
+        // Only respond to horizontal movement
+        if (Math.abs(gestureState.dx) < Math.abs(gestureState.dy)) {
+          return;
+        }
+
         const index = Math.round(
           (gestureState.moveX - 32) / (TIMELINE_WIDTH / forecasts.length)
         );
