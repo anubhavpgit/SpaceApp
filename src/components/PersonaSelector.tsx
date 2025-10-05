@@ -4,10 +4,11 @@
  */
 
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, ScrollView, Pressable } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Modal, ScrollView, Pressable } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { usePersona } from '../contexts/PersonaContext';
 import { PersonaType } from '../types/airQuality';
+import { ScribbleText } from './scribble/ScribbleText';
 
 const PERSONAS: Array<{ type: PersonaType; label: string; description: string }> = [
   {
@@ -87,10 +88,16 @@ export const PersonaSelector: React.FC = () => {
         activeOpacity={0.7}
       >
         <View style={styles.selectorContent}>
-          <Text style={styles.label}>Your Role</Text>
-          <Text style={styles.selectedValue}>{selectedPersonaLabel}</Text>
+          <ScribbleText size="xs" weight="bold" color={theme.colors.text.muted} style={styles.label}>
+            YOUR ROLE
+          </ScribbleText>
+          <ScribbleText size="base" weight="bold" color={theme.colors.text.primary}>
+            {selectedPersonaLabel}
+          </ScribbleText>
         </View>
-        <Text style={styles.chevron}>›</Text>
+        <ScribbleText size="xl" weight="regular" color={theme.colors.text.secondary}>
+          ›
+        </ScribbleText>
       </TouchableOpacity>
 
       {/* Modal for persona selection */}
@@ -104,9 +111,13 @@ export const PersonaSelector: React.FC = () => {
           <Pressable style={styles.modalBackdrop} onPress={() => setModalVisible(false)} />
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select Your Role</Text>
+              <ScribbleText size="xl" weight="bold" color={theme.colors.text.primary}>
+                Select Your Role
+              </ScribbleText>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-                <Text style={styles.closeButtonText}>✕</Text>
+                <ScribbleText size="xxl" weight="regular" color={theme.colors.text.secondary}>
+                  ✕
+                </ScribbleText>
               </TouchableOpacity>
             </View>
 
@@ -122,17 +133,23 @@ export const PersonaSelector: React.FC = () => {
                   activeOpacity={0.7}
                 >
                   <View style={styles.personaOptionContent}>
-                    <Text style={[
-                      styles.personaLabel,
-                      persona === p.type && styles.personaLabelSelected,
-                    ]}>
+                    <ScribbleText
+                      size="base"
+                      weight={persona === p.type ? "bold" : "bold"}
+                      color={theme.colors.text.primary}
+                      style={styles.personaLabel}
+                    >
                       {p.label}
-                    </Text>
-                    <Text style={styles.personaDescription}>{p.description}</Text>
+                    </ScribbleText>
+                    <ScribbleText size="sm" color={theme.colors.text.tertiary} style={styles.personaDescription}>
+                      {p.description}
+                    </ScribbleText>
                   </View>
                   {persona === p.type && (
                     <View style={styles.checkmark}>
-                      <Text style={styles.checkmarkText}>✓</Text>
+                      <ScribbleText size="base" weight="bold" color={theme.colors.background.primary}>
+                        ✓
+                      </ScribbleText>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -140,9 +157,9 @@ export const PersonaSelector: React.FC = () => {
             </ScrollView>
 
             <View style={styles.modalFooter}>
-              <Text style={styles.footerText}>
+              <ScribbleText size="xs" color={theme.colors.text.tertiary} style={styles.footerText}>
                 Changing your role will fetch personalized air quality insights
-              </Text>
+              </ScribbleText>
             </View>
           </View>
         </View>
@@ -170,22 +187,9 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     flex: 1,
   },
   label: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.text.muted,
-    letterSpacing: 1.2,
+    letterSpacing: 1.5,
     textTransform: 'uppercase',
     marginBottom: 4,
-  },
-  selectedValue: {
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.text.primary,
-  },
-  chevron: {
-    fontSize: 24,
-    fontWeight: theme.typography.weights.light,
-    color: theme.colors.text.secondary,
   },
   modalOverlay: {
     flex: 1,
@@ -214,21 +218,11 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border.light,
   },
-  modalTitle: {
-    fontSize: theme.typography.sizes.xl,
-    fontWeight: theme.typography.weights.bold,
-    color: theme.colors.text.primary,
-  },
   closeButton: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  closeButtonText: {
-    fontSize: 24,
-    fontWeight: theme.typography.weights.light,
-    color: theme.colors.text.secondary,
   },
   personaList: {
     paddingHorizontal: theme.spacing.lg,
@@ -253,19 +247,10 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     flex: 1,
   },
   personaLabel: {
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.semibold,
-    color: theme.colors.text.primary,
     marginBottom: 4,
   },
-  personaLabelSelected: {
-    fontWeight: theme.typography.weights.bold,
-  },
   personaDescription: {
-    fontSize: theme.typography.sizes.sm,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.tertiary,
-    lineHeight: theme.typography.sizes.sm * 1.4,
+    lineHeight: theme.typography.sizes.sm * 1.5,
   },
   checkmark: {
     width: 28,
@@ -276,11 +261,6 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     alignItems: 'center',
     marginLeft: theme.spacing.md,
   },
-  checkmarkText: {
-    color: theme.colors.background.primary,
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.bold,
-  },
   modalFooter: {
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.lg,
@@ -289,10 +269,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     marginTop: theme.spacing.md,
   },
   footerText: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.tertiary,
     textAlign: 'center',
-    lineHeight: theme.typography.sizes.xs * 1.5,
+    lineHeight: theme.typography.sizes.xs * 1.6,
   },
 });

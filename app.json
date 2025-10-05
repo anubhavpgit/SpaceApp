@@ -1,4 +1,7 @@
 {
   "name": "LightHouse",
-  "displayName": "LightHouse"
+  "displayName": "LightHouse",
+  "plugins": [
+    "expo-font"
+  ]
 }

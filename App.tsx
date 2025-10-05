@@ -1,12 +1,12 @@
 /**
- * NASA Space App
- * 3D Globe Visualization
+ * LightHouse App
+ * Air Quality & Weather Visualization with Cartoon/Comic Design
  *
  * @format
  */
 
 import React from 'react';
-import { StatusBar, useColorScheme } from 'react-native';
+import { StatusBar, useColorScheme, View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
@@ -22,11 +22,16 @@ import HealthAlertDetailScreen from './src/screens/HealthAlertDetailScreen';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { PersonaProvider } from './src/contexts/PersonaContext';
 import { swrConfig } from './src/config/swr';
+import { useFonts } from './src/hooks/useFonts';
 
 const Stack = createStackNavigator();
 
 function AppNavigator() {
   const colorScheme = useColorScheme();
+
+  // Pastel background colors for cartoon theme
+  const backgroundColor = colorScheme === 'dark' ? '#1A1A2E' : '#FFF8E7';
+  const globeBackground = colorScheme === 'dark' ? '#0F3460' : '#E8F3F1';
 
   return (
     <NavigationContainer>
@@ -34,7 +39,7 @@ function AppNavigator() {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
-          cardStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#fafafa' },
+          cardStyle: { backgroundColor },
         }}
       >
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
@@ -42,7 +47,7 @@ function AppNavigator() {
           name="Globe"
           component={GlobeScreen}
           options={{
-            cardStyle: { backgroundColor: '#000000' },
+            cardStyle: { backgroundColor: globeBackground },
           }}
         />
         <Stack.Screen name="AirQualityDetail" component={AirQualityDetailScreen} />
@@ -56,6 +61,21 @@ function AppNavigator() {
 }
 
 function App() {
+  const { fontsLoaded } = useFonts();
+  const colorScheme = useColorScheme();
+
+  // Show loading screen while fonts load
+  if (!fontsLoaded) {
+    const backgroundColor = colorScheme === 'dark' ? '#1A1A2E' : '#FFF8E7';
+    const spinnerColor = colorScheme === 'dark' ? '#FF85A1' : '#FF6B9D';
+
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor }}>
+        <ActivityIndicator size="large" color={spinnerColor} />
+      </View>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

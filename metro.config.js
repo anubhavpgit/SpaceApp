@@ -6,11 +6,19 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
+const defaultConfig = getDefaultConfig(__dirname);
+
 const config = {
   resolver: {
     sourceExts: ['js', 'jsx', 'json', 'ts', 'tsx', 'cjs', 'mjs'],
-    assetExts: ['glb', 'gltf', 'png', 'jpg', 'jpeg'],
+    // Include all default asset extensions plus custom ones
+    assetExts: [
+      ...defaultConfig.resolver.assetExts,
+      'glb',
+      'gltf',
+      'ttf', // Add font support for @expo-google-fonts
+    ],
   },
 };
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+module.exports = mergeConfig(defaultConfig, config);

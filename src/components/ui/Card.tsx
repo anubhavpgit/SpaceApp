@@ -1,93 +1,33 @@
+/**
+ * Card Component
+ * Wrapper around ComicCard for backward compatibility
+ * Now uses comic styling by default
+ */
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { useTheme } from '../../hooks/useTheme';
+import { ViewStyle } from 'react-native';
+import { ComicCard } from './ComicCard';
 
 interface CardProps {
   children: React.ReactNode;
   variant?: 'elevated' | 'flat' | 'outlined';
   style?: ViewStyle;
+  scribble?: boolean; // Kept for backward compatibility
 }
 
 export const Card: React.FC<CardProps> = ({
   children,
   variant = 'flat',
   style,
+  scribble = true, // Kept for compatibility but always uses scribble now
 }) => {
-  const theme = useTheme();
-  const styles = createStyles(theme);
-
-  const cardStyle = [
-    styles.card,
-    variant === 'elevated' && styles.elevated,
-    variant === 'outlined' && styles.outlined,
-    style,
-  ];
-
-  return <View style={cardStyle}>{children}</View>;
+  return (
+    <ComicCard variant={variant === 'outlined' ? 'elevated' : variant} style={style}>
+      {children}
+    </ComicCard>
+  );
 };
 
-interface CardHeaderProps {
-  children: React.ReactNode;
-  style?: ViewStyle;
-}
-
-export const CardHeader: React.FC<CardHeaderProps> = ({ children, style }) => {
-  const theme = useTheme();
-  const styles = createStyles(theme);
-  return <View style={[styles.header, style]}>{children}</View>;
-};
-
-interface CardContentProps {
-  children: React.ReactNode;
-  style?: ViewStyle;
-}
-
-export const CardContent: React.FC<CardContentProps> = ({ children, style }) => {
-  const theme = useTheme();
-  const styles = createStyles(theme);
-  return <View style={[styles.content, style]}>{children}</View>;
-};
-
-interface CardFooterProps {
-  children: React.ReactNode;
-  style?: ViewStyle;
-}
-
-export const CardFooter: React.FC<CardFooterProps> = ({ children, style }) => {
-  const theme = useTheme();
-  const styles = createStyles(theme);
-  return <View style={[styles.footer, style]}>{children}</View>;
-};
-
-const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.background.elevated,
-    borderRadius: theme.borderRadius.lg,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: theme.colors.border.light,
-  },
-  elevated: {
-    ...theme.shadows.md,
-    backgroundColor: theme.colors.background.elevated,
-  },
-  outlined: {
-    borderWidth: 1,
-    borderColor: theme.colors.border.strong,
-    ...theme.shadows.sm,
-  },
-  header: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingTop: theme.spacing.xl,
-    paddingBottom: theme.spacing.md,
-  },
-  content: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingVertical: theme.spacing.md,
-  },
-  footer: {
-    paddingHorizontal: theme.spacing.xl,
-    paddingBottom: theme.spacing.xl,
-    paddingTop: theme.spacing.md,
-  },
-});
+// Export ComicCard sub-components for compatibility
+export { ComicCardHeader as CardHeader } from './ComicCard';
+export { ComicCardContent as CardContent } from './ComicCard';
+export { ComicCardFooter as CardFooter } from './ComicCard';

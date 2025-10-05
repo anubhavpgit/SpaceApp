@@ -1,66 +1,80 @@
+// Pastel Comic/Cartoon Color Palette
 const lightColors = {
   background: {
-    primary: '#FFFFFF',
-    secondary: '#FAFAFA',
-    tertiary: '#F5F5F5',
-    elevated: '#FFFFFF',
+    primary: '#FFF8E7',      // Soft cream yellow
+    secondary: '#FFE5D9',    // Peachy pastel
+    tertiary: '#E8F3F1',     // Mint pastel
+    elevated: '#FFFBF5',     // Light cream
   },
   text: {
-    primary: '#000000',
-    secondary: '#404040',
-    tertiary: '#737373',
+    primary: '#2D4059',      // Deep blue-gray for comic text
+    secondary: '#5F6F81',    // Medium blue-gray
+    tertiary: '#8B95A5',     // Light blue-gray
     inverse: '#FFFFFF',
-    muted: '#A3A3A3',
+    muted: '#A8B4C3',        // Soft gray
   },
   border: {
-    light: 'rgba(0, 0, 0, 0.06)',
-    medium: 'rgba(0, 0, 0, 0.1)',
-    strong: 'rgba(0, 0, 0, 0.15)',
+    light: 'rgba(45, 64, 89, 0.1)',
+    medium: 'rgba(45, 64, 89, 0.2)',
+    strong: 'rgba(45, 64, 89, 0.3)',
   },
   overlay: {
-    light: 'rgba(0, 0, 0, 0.02)',
-    medium: 'rgba(0, 0, 0, 0.05)',
-    dark: 'rgba(0, 0, 0, 0.2)',
+    light: 'rgba(255, 248, 231, 0.5)',
+    medium: 'rgba(255, 248, 231, 0.7)',
+    dark: 'rgba(45, 64, 89, 0.15)',
   },
   accent: {
-    primary: '#000000',
-    secondary: '#404040',
+    primary: '#FF6B9D',      // Pink pastel (like lighthouse stripes)
+    secondary: '#4ECDC4',    // Teal pastel (like lighthouse blue)
+    yellow: '#FFD93D',       // Golden yellow (like lighthouse light)
+    orange: '#FF8B6A',       // Coral orange
+    blue: '#6BCF7F',         // Seafoam green
   },
 };
 
+// Dark mode with softer pastels
 const darkColors = {
   background: {
-    primary: '#000000',
-    secondary: '#0A0A0A',
-    tertiary: '#1A1A1A',
-    elevated: '#1A1A1A',
+    primary: '#1A1A2E',      // Deep navy
+    secondary: '#16213E',    // Dark slate blue
+    tertiary: '#0F3460',     // Medium navy
+    elevated: '#1E2A47',     // Elevated navy
   },
   text: {
-    primary: '#FFFFFF',
-    secondary: '#B0B0B0',
-    tertiary: '#808080',
-    inverse: '#000000',
-    muted: '#606060',
+    primary: '#F4F4F9',      // Soft white
+    secondary: '#C7D3DD',    // Light blue-gray
+    tertiary: '#8F9BB3',     // Medium gray-blue
+    inverse: '#1A1A2E',
+    muted: '#7A8CA0',        // Muted blue-gray
   },
   border: {
-    light: 'rgba(255, 255, 255, 0.06)',
-    medium: 'rgba(255, 255, 255, 0.1)',
-    strong: 'rgba(255, 255, 255, 0.15)',
+    light: 'rgba(199, 211, 221, 0.1)',
+    medium: 'rgba(199, 211, 221, 0.2)',
+    strong: 'rgba(199, 211, 221, 0.3)',
   },
   overlay: {
-    light: 'rgba(255, 255, 255, 0.02)',
-    medium: 'rgba(255, 255, 255, 0.05)',
-    dark: 'rgba(255, 255, 255, 0.2)',
+    light: 'rgba(26, 26, 46, 0.5)',
+    medium: 'rgba(26, 26, 46, 0.7)',
+    dark: 'rgba(199, 211, 221, 0.15)',
   },
   accent: {
-    primary: '#FFFFFF',
-    secondary: '#B0B0B0',
+    primary: '#FF85A1',      // Bright pink pastel
+    secondary: '#67E8D9',    // Bright teal
+    yellow: '#FFE66D',       // Bright yellow
+    orange: '#FFA384',       // Bright coral
+    blue: '#7FE8A3',         // Bright seafoam
   },
 };
 
 export const createTheme = (isDark: boolean) => ({
   colors: isDark ? darkColors : lightColors,
   typography: {
+    // Comic/Handwritten font families (exact names from @expo-google-fonts)
+    families: {
+      comic: 'ComicNeue_400Regular',
+      comicBold: 'ComicNeue_700Bold',
+      handwritten: 'PatrickHand_400Regular',
+    },
     weights: {
       light: '300' as const,
       regular: '400' as const,
@@ -69,36 +83,39 @@ export const createTheme = (isDark: boolean) => ({
       bold: '700' as const,
     },
     sizes: {
-      xs: 11,
-      sm: 13,
-      base: 15,
-      lg: 18,
-      xl: 22,
-      xxl: 28,
-      xxxl: 34,
+      xs: 12,
+      sm: 14,
+      base: 16,
+      lg: 20,
+      xl: 24,
+      xxl: 32,
+      xxxl: 40,
     },
     lineHeights: {
-      tight: 1.2,
-      normal: 1.5,
-      relaxed: 1.75,
+      tight: 1.3,
+      normal: 1.6,
+      relaxed: 1.9,
     },
   },
   spacing: {
-    xs: 4,
+    xs: 6,
+    sm: 10,
+    md: 14,
+    lg: 18,
+    xl: 24,
+    xxl: 30,
+    xxxl: 40,
+  },
+  // Irregular, hand-drawn style border radius
+  borderRadius: {
     sm: 8,
     md: 12,
     lg: 16,
     xl: 20,
-    xxl: 24,
-    xxxl: 32,
-  },
-  borderRadius: {
-    sm: 6,
-    md: 8,
-    lg: 12,
-    xl: 16,
     full: 9999,
+    scribble: 14, // For the scribble effect
   },
+  // Softer, more cartoon-like shadows
   shadows: {
     none: {
       shadowColor: 'transparent',
@@ -108,33 +125,40 @@ export const createTheme = (isDark: boolean) => ({
       elevation: 0,
     },
     sm: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 3,
-      elevation: 2,
+      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowOffset: { width: 2, height: 3 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
     md: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
+      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowOffset: { width: 3, height: 5 },
       shadowOpacity: 0.12,
       shadowRadius: 8,
-      elevation: 4,
+      elevation: 5,
     },
     lg: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 8 },
+      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowOffset: { width: 4, height: 8 },
       shadowOpacity: 0.15,
-      shadowRadius: 16,
+      shadowRadius: 12,
       elevation: 8,
     },
     xl: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 12 },
+      shadowColor: isDark ? '#000' : '#2D4059',
+      shadowOffset: { width: 5, height: 10 },
       shadowOpacity: 0.18,
-      shadowRadius: 24,
-      elevation: 12,
+      shadowRadius: 16,
+      elevation: 10,
     },
+  },
+  // Scribble/hand-drawn effects configuration
+  scribble: {
+    borderWidth: 3,
+    borderStyle: 'solid' as const,
+    roughness: 1.5,
+    bowing: 2,
   },
 });
 

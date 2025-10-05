@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Card, CardHeader, CardContent } from '../ui/Card';
+import { ScribbleText } from '../scribble/ScribbleText';
 import { AQIReading } from '../../types/airQuality';
 import { getAQIColor, getAQILabel, AQI_LABELS } from '../../constants/aqi';
 import { theme } from '../../constants/theme';
@@ -16,27 +17,39 @@ export const AQICard: React.FC<AQICardProps> = ({ data }) => {
   return (
     <Card variant="elevated" style={styles.card}>
       <CardHeader>
-        <Text style={styles.title}>Air Quality Index</Text>
-        <Text style={styles.location}>{data.location.city}</Text>
+        <ScribbleText size="xs" weight="bold" color={theme.colors.text.muted} style={styles.title}>
+          AIR QUALITY INDEX
+        </ScribbleText>
+        <ScribbleText size="xxl" weight="regular" style={styles.location}>
+          {data.location.city}
+        </ScribbleText>
       </CardHeader>
 
       <CardContent style={styles.content}>
         <View style={styles.aqiContainer}>
           <View style={[styles.aqiIndicator, { backgroundColor: color }]}>
-            <Text style={styles.aqiValue}>{data.aqi}</Text>
+            <ScribbleText size="xxxl" weight="bold" color={theme.colors.text.inverse} style={styles.aqiValue}>
+              {data.aqi}
+            </ScribbleText>
           </View>
           <View style={styles.aqiInfo}>
-            <Text style={[styles.aqiLabel, { color }]}>{label}</Text>
-            <Text style={styles.timestamp}>
+            <ScribbleText size="lg" weight="regular" color={color} style={styles.aqiLabel}>
+              {label}
+            </ScribbleText>
+            <ScribbleText size="sm" weight="regular" color={theme.colors.text.muted}>
               Updated {new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </Text>
+            </ScribbleText>
           </View>
         </View>
 
         {data.dominantPollutant && (
           <View style={styles.dominantPollutant}>
-            <Text style={styles.dominantLabel}>Dominant Pollutant</Text>
-            <Text style={styles.dominantValue}>{data.dominantPollutant.toUpperCase()}</Text>
+            <ScribbleText size="sm" color={theme.colors.text.tertiary}>
+              Dominant Pollutant
+            </ScribbleText>
+            <ScribbleText size="base" weight="bold" color={theme.colors.text.primary}>
+              {data.dominantPollutant.toUpperCase()}
+            </ScribbleText>
           </View>
         )}
       </CardContent>
@@ -46,21 +59,15 @@ export const AQICard: React.FC<AQICardProps> = ({ data }) => {
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: theme.spacing.lg,
+    // marginBottom handled by Card wrapper
   },
   title: {
-    fontSize: theme.typography.sizes.xs,
-    fontWeight: theme.typography.weights.medium,
-    color: theme.colors.text.muted,
     textTransform: 'uppercase',
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     marginBottom: theme.spacing.sm,
   },
   location: {
-    fontSize: theme.typography.sizes.xxl,
-    fontWeight: theme.typography.weights.light,
-    color: theme.colors.text.primary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.3,
   },
   content: {
     paddingTop: theme.spacing.xl,
@@ -71,8 +78,8 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xl,
   },
   aqiIndicator: {
-    width: 90,
-    height: 90,
+    width: 95,
+    height: 95,
     borderRadius: theme.borderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
@@ -80,40 +87,20 @@ const styles = StyleSheet.create({
     ...theme.shadows.md,
   },
   aqiValue: {
-    fontSize: 40,
-    fontWeight: theme.typography.weights.light,
-    color: theme.colors.text.inverse,
-    letterSpacing: -1,
+    letterSpacing: -0.5,
   },
   aqiInfo: {
     flex: 1,
   },
   aqiLabel: {
-    fontSize: theme.typography.sizes.lg,
-    fontWeight: theme.typography.weights.regular,
     marginBottom: theme.spacing.xs,
-  },
-  timestamp: {
-    fontSize: theme.typography.sizes.sm,
-    fontWeight: theme.typography.weights.light,
-    color: theme.colors.text.muted,
   },
   dominantPollutant: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: theme.spacing.xl,
-    borderTopWidth: 1,
+    borderTopWidth: 2,
     borderTopColor: theme.colors.border.light,
-  },
-  dominantLabel: {
-    fontSize: theme.typography.sizes.sm,
-    fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.tertiary,
-  },
-  dominantValue: {
-    fontSize: theme.typography.sizes.base,
-    fontWeight: theme.typography.weights.medium,
-    color: theme.colors.text.primary,
   },
 });

@@ -29,13 +29,13 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
   const theme = useTheme();
 
   // Theme-aware colors
-  // Dark theme: White globe with black dots
-  // Light theme: Black globe with white dots
-  const isDark = theme.colors.background.primary === '#000000';
-  const globeColor = isDark ? '#FFFFFF' : '#000000';
-  const dotsColor = isDark ? '#000000' : '#FFFFFF';
+  // Dark mode: White globe with background-colored dots
+  // Light mode: Use text primary color for globe with background-colored dots
+  const isDark = theme.colors.background.primary === '#1A1A2E';
+  const globeColor = isDark ? '#FFFFFF' : theme.colors.text.primary;
+  const dotsColor = theme.colors.background.primary; // Always use background color for dots
   const backgroundColor = theme.colors.background.primary;
-  const atmosphereColor = isDark ? '#FFFFFF' : '#000000';
+  const atmosphereColor = isDark ? '#FFFFFF' : theme.colors.text.primary;
 
   // Apply user rotation
   useEffect(() => {
