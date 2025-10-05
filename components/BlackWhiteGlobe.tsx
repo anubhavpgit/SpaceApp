@@ -6,20 +6,13 @@ import * as THREE from 'three';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../src/contexts/LocationContext';
 import { usePersona } from '../src/contexts/PersonaContext';
+import { useTheme } from '../src/hooks/useTheme';
 
 // Import pre-computed globe dots (INSTANT LOAD - NO COMPUTATION!)
 const precomputedDots = require('../assets/globe/globe-dots.json');
 
 // Note: Globe dots use 90° longitude offset coordinate system
 // Click detection applies -90° correction to match geographic coordinates
-
-// Clean Dark Mode Theme: White globe with black dots
-const THEME = {
-  background: '#000000',
-  globe: '#ffffff',
-  points: '#000000',
-  atmosphere: '#ffffff',
-};
 
 
 interface GlobeSceneProps {
@@ -33,6 +26,16 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
   const groupRef = useRef<THREE.Group>(null);
   const dotsRef = useRef<THREE.InstancedMesh>(null);
   const { camera, raycaster, size, gl, invalidate } = useThree();
+  const theme = useTheme();
+
+  // Theme-aware colors
+  // Dark theme: White globe with black dots
+  // Light theme: Black globe with white dots
+  const isDark = theme.colors.background.primary === '#000000';
+  const globeColor = isDark ? '#FFFFFF' : '#000000';
+  const dotsColor = isDark ? '#000000' : '#FFFFFF';
+  const backgroundColor = theme.colors.background.primary;
+  const atmosphereColor = isDark ? '#FFFFFF' : '#000000';
 
   // Apply user rotation
   useEffect(() => {
@@ -58,9 +61,9 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
     // Create small circle geometry for each dot (smaller for dense coverage)
     const geometry = new THREE.CircleGeometry(0.011, 6);
 
-    // Black material for dots
+    // Theme-aware dot material
     const material = new THREE.MeshBasicMaterial({
-      color: THEME.points,
+      color: dotsColor,
       side: THREE.DoubleSide,
       transparent: false,
     });
@@ -73,7 +76,7 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
       dotMaterial: material,
       instanceCount: positions.length
     };
-  }, []);
+  }, [dotsColor]);
 
   // Position all dot instances
   useEffect(() => {
@@ -148,17 +151,17 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
       <ambientLight intensity={1.8} />
       <directionalLight position={[5, 3, 5]} intensity={0.6} />
 
-      {/* WHITE Globe Base - Smooth matte finish */}
+      {/* Theme-aware Globe Base - Smooth matte finish */}
       <mesh ref={globeRef}>
         <sphereGeometry args={[2, 48, 48]} /> {/* Increased from 32 for smoother globe */}
         <meshStandardMaterial
-          color={THEME.globe}
+          color={globeColor}
           roughness={1.0}
           metalness={0}
         />
       </mesh>
 
-      {/* World Map as Black Dots (Optimized InstancedMesh) */}
+      {/* World Map Dots - Theme-aware (Optimized InstancedMesh) */}
       <instancedMesh
         ref={dotsRef}
         args={[dotGeometry, dotMaterial, instanceCount]}
@@ -169,7 +172,7 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
       <mesh>
         <sphereGeometry args={[2.12, 32, 32]} />
         <meshBasicMaterial
-          color={THEME.atmosphere}
+          color={atmosphereColor}
           transparent
           opacity={0.05}
           side={THREE.BackSide}
@@ -193,6 +196,10 @@ export default function BlackWhiteGlobe({ onLocationSelect }: BlackWhiteGlobePro
   const { updateLocation } = useLocation();
   const { resetPersona } = usePersona();
   const glRef = useRef<any>(null);
+  const theme = useTheme();
+
+  // Theme-aware background
+  const backgroundColor = theme.colors.background.primary;
 
   // Handle location selection with reverse geocoding
   const handleTap = useCallback(
@@ -337,7 +344,7 @@ export default function BlackWhiteGlobe({ onLocationSelect }: BlackWhiteGlobePro
 
   return (
     <GestureDetector gesture={composedGesture}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor }]}>
         <Canvas
           camera={{ position: [0, 0, 6], fov: 45 }}
           frameloop="demand" // On-demand rendering for performance
@@ -354,7 +361,7 @@ export default function BlackWhiteGlobe({ onLocationSelect }: BlackWhiteGlobePro
           }}
           style={styles.canvas}
         >
-          <color attach="background" args={[THEME.background]} />
+          <color attach="background" args={[backgroundColor]} />
           <GlobeScene rotation={rotation} zoom={zoom} onTap={handleTap} />
         </Canvas>
       </View>
@@ -365,7 +372,6 @@ export default function BlackWhiteGlobe({ onLocationSelect }: BlackWhiteGlobePro
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.background,
   },
   canvas: {
     flex: 1,
