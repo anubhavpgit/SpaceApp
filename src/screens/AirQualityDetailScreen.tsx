@@ -449,6 +449,8 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text.primary,
     marginBottom: 2,
+    lineHeight: theme.typography.sizes.lg * 1.4,
+    paddingVertical: 2,
   },
   pollutantFullName: {
     fontSize: theme.typography.sizes.sm,
