@@ -6,13 +6,26 @@ import { useTheme } from '../hooks/useTheme';
 import { useSwrDashboard } from '../hooks/useSwrDashboard';
 import { Card, CardContent } from '../components/ui/Card';
 
-export default function WeatherDetailScreen() {
+interface AISummary {
+  brief: string;
+  detailed?: string;
+  recommendation?: string;
+  insight?: string;
+  impact?: string;
+  uvAlert?: string;
+  [key: string]: string | string[] | undefined;
+}
+
+export default function WeatherDetailScreen({ route }: any) {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const theme = useTheme();
   const styles = createStyles(theme);
   const { data, loading } = useSwrDashboard();
   const [useFahrenheit, setUseFahrenheit] = useState(true);
+
+  // Get AI summary from route params or dashboard data
+  const aiSummary: AISummary | undefined = route?.params?.aiSummary || data?.weatherSummary;
 
   const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5) + 32;
 
@@ -53,6 +66,34 @@ export default function WeatherDetailScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* AI Insights */}
+        {aiSummary && (
+          <Card variant="elevated" style={styles.aiCard}>
+            <CardContent style={styles.aiContent}>
+              <Text style={styles.aiLabel}>AI WEATHER INSIGHT</Text>
+              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              {aiSummary.detailed && (
+                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+              )}
+              {aiSummary.impact && (
+                <View style={styles.impactBox}>
+                  <Text style={styles.impactLabel}>IMPACT ON AIR QUALITY</Text>
+                  <Text style={styles.impactText}>{aiSummary.impact}</Text>
+                </View>
+              )}
+              {aiSummary.recommendation && (
+                <View style={styles.recommendationBox}>
+                  <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
+                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                </View>
+              )}
+              {aiSummary.uvAlert && (
+                <Text style={styles.uvAlert}>{aiSummary.uvAlert}</Text>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Current Conditions */}
         <Card variant="elevated" style={styles.heroCard}>
           <CardContent style={styles.heroContent}>
@@ -163,6 +204,80 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     flex: 1,
     paddingHorizontal: theme.spacing.lg,
     paddingTop: theme.spacing.xl,
+  },
+  aiCard: {
+    marginBottom: theme.spacing.xl,
+  },
+  aiContent: {
+    paddingVertical: theme.spacing.xl,
+  },
+  aiLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.md,
+  },
+  aiBrief: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.base * 1.5,
+    marginBottom: theme.spacing.md,
+  },
+  aiDetailed: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.6,
+    marginBottom: theme.spacing.md,
+  },
+  impactBox: {
+    backgroundColor: theme.colors.overlay.light,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  impactLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  impactText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  recommendationBox: {
+    backgroundColor: theme.colors.overlay.medium,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.text.primary,
+    marginBottom: theme.spacing.md,
+  },
+  recommendationLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  recommendationText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  uvAlert: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+    fontStyle: 'italic',
   },
   heroCard: {
     marginBottom: theme.spacing.xl,

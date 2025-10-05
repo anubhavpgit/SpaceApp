@@ -16,14 +16,20 @@ import {
   WeatherData,
 } from '../types/airQuality';
 
+interface AISummary {
+  brief: string;
+  detailed?: string;
+  recommendation?: string;
+  insight?: string;
+  [key: string]: string | string[] | undefined;
+}
+
 interface DashboardData {
   currentAQI: AQIReading;
-  currentAQISummary?: {
-    brief: string;
-    detailed: string;
-    recommendation: string;
-    insight: string;
-  };
+  currentAQISummary?: AISummary;
+  weatherSummary?: AISummary;
+  forecastSummary?: AISummary;
+  historicalSummary?: AISummary;
   weather: WeatherData;
   forecast: AirQualityForecast;
   healthAlerts: HealthAlert[];
@@ -52,6 +58,7 @@ interface DashboardData {
     };
     personalizedTips: string[];
   };
+  personaInsights?: any;
 }
 
 interface UseSwrDashboardReturn {
@@ -115,6 +122,9 @@ const transformDashboardData = (response: any): DashboardData => {
       confidence: response.dataSources?.raw?.aggregated?.confidence || 0.9,
     },
     currentAQISummary: response.currentAQI?.aiSummary,
+    weatherSummary: response.weather?.aiSummary,
+    forecastSummary: response.forecast24h?.aiSummary,
+    historicalSummary: response.historical7d?.aiSummary,
     weather: {
       ...response.weather.raw,
       timestamp: new Date(response.weather.raw.timestamp),
@@ -152,6 +162,7 @@ const transformDashboardData = (response: any): DashboardData => {
       },
       personalizedTips: response.insights?.personalizedTips || [],
     },
+    personaInsights: response.personaInsights,
   };
 };
 

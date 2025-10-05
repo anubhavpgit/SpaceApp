@@ -6,13 +6,24 @@ import { useTheme } from '../hooks/useTheme';
 import { Card, CardContent } from '../components/ui/Card';
 import { getAQIColor } from '../constants/aqi';
 
+interface AISummary {
+  brief: string;
+  detailed?: string;
+  recommendation?: string;
+  insight?: string;
+  bestTime?: string;
+  worstTime?: string;
+  trend?: string;
+  [key: string]: string | string[] | undefined;
+}
+
 export default function ForecastDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { forecast } = route.params as any;
+  const { forecast, aiSummary } = route.params as any;
 
   if (!forecast || !forecast.forecasts || forecast.forecasts.length === 0) {
     return (
@@ -36,16 +47,46 @@ export default function ForecastDetailScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Summary */}
-        <Card variant="elevated" style={styles.summaryCard}>
-          <CardContent style={styles.summaryContent}>
-            <Text style={styles.summaryLabel}>FORECAST SUMMARY</Text>
-            <Text style={styles.summaryText}>
-              Air quality will improve over the next 24 hours. Best conditions expected around 3 PM.
-              Sensitive groups should avoid outdoor activities during morning hours.
-            </Text>
-          </CardContent>
-        </Card>
+        {/* AI Insights */}
+        {aiSummary && (
+          <Card variant="elevated" style={styles.aiCard}>
+            <CardContent style={styles.aiContent}>
+              <Text style={styles.aiLabel}>AI FORECAST INSIGHT</Text>
+              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              {aiSummary.detailed && (
+                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+              )}
+              {aiSummary.trend && (
+                <View style={styles.trendBox}>
+                  <Text style={styles.trendLabel}>TREND ANALYSIS</Text>
+                  <Text style={styles.trendText}>{aiSummary.trend}</Text>
+                </View>
+              )}
+              {(aiSummary.bestTime || aiSummary.worstTime) && (
+                <View style={styles.timeBox}>
+                  {aiSummary.bestTime && (
+                    <View style={styles.timeRow}>
+                      <Text style={styles.timeLabel}>Best Time:</Text>
+                      <Text style={styles.timeValue}>{aiSummary.bestTime}</Text>
+                    </View>
+                  )}
+                  {aiSummary.worstTime && (
+                    <View style={styles.timeRow}>
+                      <Text style={styles.timeLabel}>Worst Time:</Text>
+                      <Text style={styles.timeValue}>{aiSummary.worstTime}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+              {aiSummary.recommendation && (
+                <View style={styles.recommendationBox}>
+                  <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
+                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                </View>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Hourly Breakdown */}
         <Text style={styles.sectionTitle}>HOURLY BREAKDOWN</Text>
@@ -151,6 +192,94 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+  aiCard: {
+    marginBottom: theme.spacing.xl,
+  },
+  aiContent: {
+    paddingVertical: theme.spacing.xl,
+  },
+  aiLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.md,
+  },
+  aiBrief: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.base * 1.5,
+    marginBottom: theme.spacing.md,
+  },
+  aiDetailed: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.6,
+    marginBottom: theme.spacing.md,
+  },
+  trendBox: {
+    backgroundColor: theme.colors.overlay.light,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  trendLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  trendText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  timeBox: {
+    backgroundColor: theme.colors.overlay.light,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  timeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+  timeLabel: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.secondary,
+  },
+  timeValue: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+  },
+  recommendationBox: {
+    backgroundColor: theme.colors.overlay.medium,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.text.primary,
+  },
+  recommendationLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  recommendationText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
   },
   scrollView: {
     flex: 1,

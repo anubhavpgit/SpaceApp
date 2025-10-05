@@ -5,16 +5,26 @@ import { Card, CardContent } from '../ui/Card';
 import { Pollutants } from '../../types/airQuality';
 import { useTheme } from '../../hooks/useTheme';
 
+interface AISummary {
+  brief: string;
+  detailed?: string;
+  recommendation?: string;
+  insight?: string;
+  [key: string]: string | string[] | undefined;
+}
+
 interface AirQualityCompactCardProps {
   pollutants: Pollutants;
   currentAQI?: any;
   dataSources?: any;
+  aiSummary?: AISummary;
 }
 
 export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({
   pollutants,
   currentAQI,
-  dataSources
+  dataSources,
+  aiSummary
 }) => {
   const theme = useTheme();
   const navigation = useNavigation();
@@ -34,6 +44,7 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({
       onPress={() => navigation.navigate('AirQualityDetail' as never, {
         currentAQI,
         dataSources,
+        aiSummary,
       } as never)}
       style={styles.touchable}
     >

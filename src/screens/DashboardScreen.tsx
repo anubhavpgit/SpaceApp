@@ -14,6 +14,7 @@ import { Card, CardContent } from '../components/ui/Card';
 import { AnimatedDataView } from '../components/ui/AnimatedDataView';
 import { RevalidationIndicator } from '../components/ui/RevalidationIndicator';
 import { ForecastItem } from '../types/airQuality';
+import { PersonaInsightDropdown } from '../components/PersonaInsightDropdown';
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
@@ -98,7 +99,7 @@ export default function DashboardScreen() {
         contentContainerStyle={[
           styles.content,
           {
-            paddingTop: insets.top + 16,
+            paddingTop: insets.top + 4,
             paddingBottom: insets.bottom + 20,
           },
         ]}
@@ -119,7 +120,11 @@ export default function DashboardScreen() {
         )}
 
         {/* Revalidation Indicator */}
-        <RevalidationIndicator isValidating={isValidating} lastUpdated={lastUpdated} />
+        <RevalidationIndicator
+          isValidating={isValidating}
+          lastUpdated={lastUpdated}
+          isPullRefreshing={refreshing}
+        />
 
         {/* Header */}
         <AnimatedDataView data={data.currentAQI} animationType="fade">
@@ -158,6 +163,9 @@ export default function DashboardScreen() {
           </View>
         </AnimatedDataView>
 
+        {/* Persona Selector & Insights Dropdown */}
+        <PersonaInsightDropdown insights={data.personaInsights} />
+
         {/* Health Alerts - Compact */}
         {data.healthAlerts && data.healthAlerts.length > 0 && data.healthAlerts.map((alert) => (
           <HealthAlertCard key={alert.id} alert={alert} />
@@ -170,6 +178,7 @@ export default function DashboardScreen() {
               activeOpacity={0.7}
               onPress={() => navigation.navigate('ForecastDetail' as never, {
                 forecast: data.forecast,
+                aiSummary: data.forecastSummary,
               } as never)}
             >
               <Card variant="elevated" style={styles.forecastCard}>
@@ -189,11 +198,15 @@ export default function DashboardScreen() {
         {data.weather && data.currentAQI?.pollutants && (
           <AnimatedDataView data={data.weather} animationType="fade">
             <View style={styles.grid}>
-              <WeatherCompactCard weather={data.weather} />
+              <WeatherCompactCard
+                weather={data.weather}
+                aiSummary={data.weatherSummary}
+              />
               <AirQualityCompactCard
                 pollutants={data.currentAQI.pollutants}
                 currentAQI={data.currentAQI}
                 dataSources={data.dataSources}
+                aiSummary={data.currentAQISummary}
               />
             </View>
           </AnimatedDataView>
@@ -202,7 +215,11 @@ export default function DashboardScreen() {
         {/* Historical Trends */}
         {data.historicalReadings && data.historicalReadings.length > 0 ? (
           <AnimatedDataView data={data.historicalReadings} animationType="fade">
-            <HistoricalTrendCard readings={data.historicalReadings} period="7d" />
+            <HistoricalTrendCard
+              readings={data.historicalReadings}
+              period="7d"
+              aiSummary={data.historicalSummary}
+            />
           </AnimatedDataView>
         ) : (
           console.log('[DashboardScreen] No historical readings to display:', {
@@ -302,17 +319,18 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   summaryContainer: {
     marginTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
   },
   summaryText: {
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.regular,
-    color: theme.colors.text.secondary,
+    color: theme.colors.text.primary,
     lineHeight: theme.typography.sizes.sm * 1.5,
   },
   insightText: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.medium,
-    color: theme.colors.text.tertiary,
+    color: theme.colors.text.secondary,
     marginTop: theme.spacing.sm,
     lineHeight: theme.typography.sizes.xs * 1.5,
   },

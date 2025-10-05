@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import BlackWhiteGlobe from '../components/BlackWhiteGlobe';
+import BlackWhiteGlobe from '../../components/BlackWhiteGlobe';
 
 export default function GlobeScreen() {
   const insets = useSafeAreaInsets();
@@ -20,7 +20,7 @@ export default function GlobeScreen() {
         </TouchableOpacity>
         <View style={styles.headerContent}>
           <Text style={styles.title}>Earth</Text>
-          <Text style={styles.subtitle}>Drag to rotate • Pinch to zoom</Text>
+          <Text style={styles.subtitle}>Drag to rotate • Pinch to zoom • Tap to select</Text>
         </View>
       </View>
 

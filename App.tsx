@@ -6,32 +6,35 @@
  */
 
 import React from 'react';
-import { StatusBar } from 'react-native';
+import { StatusBar, useColorScheme } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SWRConfig } from 'swr';
 import DashboardScreen from './src/screens/DashboardScreen';
-import GlobeScreen from './screens/GlobeScreen';
+import GlobeScreen from './src/screens/GlobeScreen';
 import AirQualityDetailScreen from './src/screens/AirQualityDetailScreen';
 import WeatherDetailScreen from './src/screens/WeatherDetailScreen';
 import ForecastDetailScreen from './src/screens/ForecastDetailScreen';
 import HistoricalDetailScreen from './src/screens/HistoricalDetailScreen';
 import HealthAlertDetailScreen from './src/screens/HealthAlertDetailScreen';
 import { LocationProvider } from './src/contexts/LocationContext';
+import { PersonaProvider } from './src/contexts/PersonaContext';
 import { swrConfig } from './src/config/swr';
 
 const Stack = createStackNavigator();
 
 function AppNavigator() {
+  const colorScheme = useColorScheme();
+
   return (
     <NavigationContainer>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'} />
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
-          cardStyle: { backgroundColor: '#fafafa' },
+          cardStyle: { backgroundColor: colorScheme === 'dark' ? '#000000' : '#fafafa' },
         }}
       >
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
@@ -57,9 +60,11 @@ function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <SWRConfig value={swrConfig}>
-          <LocationProvider>
-            <AppNavigator />
-          </LocationProvider>
+          <PersonaProvider>
+            <LocationProvider>
+              <AppNavigator />
+            </LocationProvider>
+          </PersonaProvider>
         </SWRConfig>
       </SafeAreaProvider>
     </GestureHandlerRootView>

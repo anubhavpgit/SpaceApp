@@ -7,13 +7,23 @@ import { Card, CardContent } from '../components/ui/Card';
 import { POLLUTANT_INFO } from '../constants/aqi';
 import { Pollutants } from '../types/airQuality';
 
+interface AISummary {
+  brief: string;
+  detailed?: string;
+  recommendation?: string;
+  insight?: string;
+  healthImpact?: string;
+  dominantPollutant?: string;
+  [key: string]: string | string[] | undefined;
+}
+
 export default function AirQualityDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { currentAQI, dataSources } = route.params as any;
+  const { currentAQI, dataSources, aiSummary } = route.params as any;
 
   if (!currentAQI) {
     return (
@@ -94,6 +104,37 @@ export default function AirQualityDetailScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* AI Insights */}
+        {aiSummary && (
+          <Card variant="elevated" style={styles.aiCard}>
+            <CardContent style={styles.aiContent}>
+              <Text style={styles.aiLabel}>AI AIR QUALITY INSIGHT</Text>
+              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              {aiSummary.detailed && (
+                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+              )}
+              {aiSummary.healthImpact && (
+                <View style={styles.healthBox}>
+                  <Text style={styles.healthLabel}>HEALTH IMPACT</Text>
+                  <Text style={styles.healthText}>{aiSummary.healthImpact}</Text>
+                </View>
+              )}
+              {aiSummary.dominantPollutant && (
+                <View style={styles.pollutantBox}>
+                  <Text style={styles.pollutantLabel}>DOMINANT POLLUTANT</Text>
+                  <Text style={styles.pollutantText}>{aiSummary.dominantPollutant}</Text>
+                </View>
+              )}
+              {aiSummary.recommendation && (
+                <View style={styles.recommendationBox}>
+                  <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
+                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                </View>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Data Source Comparison */}
         {dataSources && (
           <Card variant="elevated" style={styles.card}>
@@ -230,6 +271,92 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   placeholder: {
     width: 40,
+  },
+  aiCard: {
+    marginBottom: theme.spacing.xl,
+  },
+  aiContent: {
+    paddingVertical: theme.spacing.xl,
+  },
+  aiLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.md,
+  },
+  aiBrief: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.base * 1.5,
+    marginBottom: theme.spacing.md,
+  },
+  aiDetailed: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.6,
+    marginBottom: theme.spacing.md,
+  },
+  healthBox: {
+    backgroundColor: theme.colors.overlay.light,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  healthLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  healthText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  pollutantBox: {
+    backgroundColor: theme.colors.overlay.light,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  pollutantLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  pollutantText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  recommendationBox: {
+    backgroundColor: theme.colors.overlay.medium,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.text.primary,
+    marginBottom: theme.spacing.md,
+  },
+  recommendationLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  recommendationText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
   },
   scrollView: {
     flex: 1,

@@ -11,11 +11,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { airQualityAPI } from '../api/client';
 import { useLocation } from '../contexts/LocationContext';
+import { usePersona } from '../contexts/PersonaContext';
 import {
   AQIReading,
   AirQualityForecast,
   HealthAlert,
   WeatherData,
+  PersonaInsights,
 } from '../types/airQuality';
 
 interface DashboardData {
@@ -54,6 +56,7 @@ interface DashboardData {
     };
     personalizedTips: string[];
   };
+  personaInsights?: PersonaInsights;
 }
 
 interface UseDashboardDataReturn {
@@ -66,11 +69,13 @@ interface UseDashboardDataReturn {
 
 export const useDashboardData = (): UseDashboardDataReturn => {
   const { location } = useLocation();
+  const { persona } = usePersona();
   console.log('[useDashboardData] Hook called with location:', {
     lat: location.latitude,
     lon: location.longitude,
     isLoading: location.isLoading,
     hasError: !!location.error,
+    persona,
   });
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -119,7 +124,8 @@ export const useDashboardData = (): UseDashboardDataReturn => {
 
       const response = await airQualityAPI.getDashboard(
         location.latitude,
-        location.longitude
+        location.longitude,
+        persona !== 'general' ? persona : undefined
       );
 
       console.log('[useDashboardData] Received response:', {
@@ -227,6 +233,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
           },
           personalizedTips: response.insights?.personalizedTips || [],
         },
+        personaInsights: response.personaInsights,
       };
 
       console.log('[useDashboardData] Dashboard data transformed successfully', {
@@ -237,6 +244,7 @@ export const useDashboardData = (): UseDashboardDataReturn => {
         historicalCount: dashboardData.historicalReadings.length,
         historicalReadings: dashboardData.historicalReadings,
         rawHistorical: response.historical7d?.raw,
+        hasPersonaInsights: !!dashboardData.personaInsights,
       });
 
       // Update last fetched coordinates
@@ -256,14 +264,15 @@ export const useDashboardData = (): UseDashboardDataReturn => {
       setLoading(false);
       console.log('[useDashboardData] Fetch complete');
     }
-  }, [location.latitude, location.longitude]);
+  }, [location.latitude, location.longitude, persona]);
 
-  // Fetch when coordinates change
+  // Fetch when coordinates or persona change
   useEffect(() => {
-    console.log('[useDashboardData] useEffect triggered - location changed:', {
+    console.log('[useDashboardData] useEffect triggered - location or persona changed:', {
       lat: location.latitude,
       lon: location.longitude,
       isLocationLoading: location.isLoading,
+      persona,
     });
 
     // Don't fetch if location is still loading
@@ -272,10 +281,10 @@ export const useDashboardData = (): UseDashboardDataReturn => {
       return;
     }
 
-    console.log('[useDashboardData] Coordinates changed, triggering fetch');
+    console.log('[useDashboardData] Coordinates or persona changed, triggering fetch');
     fetchDashboardData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.latitude, location.longitude, location.isLoading]);
+  }, [location.latitude, location.longitude, location.isLoading, persona]);
 
   // Refetch on interval (every 5 minutes)
   useEffect(() => {

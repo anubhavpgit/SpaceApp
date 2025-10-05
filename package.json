@@ -27,7 +27,8 @@
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^4.16.0",
     "swr": "^2.3.6",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "three-globe": "^2.44.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

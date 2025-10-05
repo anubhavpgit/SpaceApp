@@ -9,6 +9,16 @@ import { Card, CardContent } from '../components/ui/Card';
 import { getAQIColor } from '../constants/aqi';
 import { AQIReading } from '../types/airQuality';
 
+interface AISummary {
+  brief: string;
+  detailed?: string;
+  recommendation?: string;
+  insight?: string;
+  trendAnalysis?: string;
+  pattern?: string;
+  [key: string]: string | string[] | undefined;
+}
+
 export default function HistoricalDetailScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
@@ -16,7 +26,7 @@ export default function HistoricalDetailScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const { location } = useLocation();
-  const { readings: initialReadings, initialPeriod } = route.params as any;
+  const { readings: initialReadings, initialPeriod, aiSummary } = route.params as any;
 
   const [selectedPeriod, setSelectedPeriod] = useState<'7d' | '30d' | '90d'>(initialPeriod || '7d');
   const [loading, setLoading] = useState(false);
@@ -137,6 +147,37 @@ export default function HistoricalDetailScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* AI Insights */}
+        {aiSummary && (
+          <Card variant="elevated" style={styles.aiCard}>
+            <CardContent style={styles.aiContent}>
+              <Text style={styles.aiLabel}>AI TREND ANALYSIS</Text>
+              <Text style={styles.aiBrief}>{aiSummary.brief}</Text>
+              {aiSummary.detailed && (
+                <Text style={styles.aiDetailed}>{aiSummary.detailed}</Text>
+              )}
+              {aiSummary.trendAnalysis && (
+                <View style={styles.analysisBox}>
+                  <Text style={styles.analysisLabel}>TREND ANALYSIS</Text>
+                  <Text style={styles.analysisText}>{aiSummary.trendAnalysis}</Text>
+                </View>
+              )}
+              {aiSummary.pattern && (
+                <View style={styles.patternBox}>
+                  <Text style={styles.patternLabel}>PATTERN DETECTED</Text>
+                  <Text style={styles.patternText}>{aiSummary.pattern}</Text>
+                </View>
+              )}
+              {aiSummary.recommendation && (
+                <View style={styles.recommendationBox}>
+                  <Text style={styles.recommendationLabel}>RECOMMENDATION</Text>
+                  <Text style={styles.recommendationText}>{aiSummary.recommendation}</Text>
+                </View>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* Period Selector */}
         <View style={styles.periodSelector}>
           {(['7d', '30d', '90d'] as const).map((period) => (
@@ -170,7 +211,7 @@ export default function HistoricalDetailScreen() {
           <Card variant="elevated" style={styles.statCard}>
             <CardContent style={styles.statContent}>
               <Text style={styles.statLabel}>RANGE</Text>
-              <Text style={styles.statValue}>{minAQI}-{maxAQI}</Text>
+              <Text style={styles.statValueSmall}>{minAQI}-{maxAQI}</Text>
               <Text style={styles.statUnit}>AQI</Text>
             </CardContent>
           </Card>
@@ -178,7 +219,7 @@ export default function HistoricalDetailScreen() {
           <Card variant="elevated" style={styles.statCard}>
             <CardContent style={styles.statContent}>
               <Text style={styles.statLabel}>TREND</Text>
-              <Text style={[styles.statValue, { color: isImproving ? '#10B981' : '#EF4444' }]}>
+              <Text style={[styles.statValueSmall, { color: isImproving ? '#10B981' : '#EF4444' }]} numberOfLines={1}>
                 {isImproving ? '↓' : '↑'} {Math.abs(trendPercent ?? 0).toFixed(1)}%
               </Text>
               <Text style={styles.statUnit}>{isImproving ? 'Improving' : 'Worsening'}</Text>
@@ -337,6 +378,91 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   placeholder: {
     width: 40,
   },
+  aiCard: {
+    marginBottom: theme.spacing.xl,
+  },
+  aiContent: {
+    paddingVertical: theme.spacing.xl,
+  },
+  aiLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.md,
+  },
+  aiBrief: {
+    fontSize: theme.typography.sizes.base,
+    fontWeight: theme.typography.weights.semibold,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.base * 1.5,
+    marginBottom: theme.spacing.md,
+  },
+  aiDetailed: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.regular,
+    color: theme.colors.text.secondary,
+    lineHeight: theme.typography.sizes.sm * 1.6,
+    marginBottom: theme.spacing.md,
+  },
+  analysisBox: {
+    backgroundColor: theme.colors.overlay.light,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  analysisLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  analysisText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  patternBox: {
+    backgroundColor: theme.colors.overlay.light,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  patternLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  patternText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
+  recommendationBox: {
+    backgroundColor: theme.colors.overlay.medium,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.text.primary,
+  },
+  recommendationLabel: {
+    fontSize: theme.typography.sizes.xs,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.muted,
+    letterSpacing: 1.2,
+    marginBottom: theme.spacing.sm,
+  },
+  recommendationText: {
+    fontSize: theme.typography.sizes.sm,
+    fontWeight: theme.typography.weights.medium,
+    color: theme.colors.text.primary,
+    lineHeight: theme.typography.sizes.sm * 1.5,
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: theme.spacing.lg,
@@ -393,6 +519,13 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text.primary,
     letterSpacing: -1,
+    marginBottom: 2,
+  },
+  statValueSmall: {
+    fontSize: 20,
+    fontWeight: theme.typography.weights.bold,
+    color: theme.colors.text.primary,
+    letterSpacing: -0.5,
     marginBottom: 2,
   },
   statUnit: {

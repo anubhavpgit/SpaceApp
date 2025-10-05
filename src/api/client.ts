@@ -10,129 +10,15 @@ import {
   HealthAlert,
   WeatherData,
   Location,
+  PersonaInsights,
+  PersonaType,
+  DashboardData,
 } from '../types/airQuality';
 
 interface DashboardResponse {
   success: boolean;
   timestamp: string;
-  data: {
-    location: Location;
-    currentAQI: {
-      raw: AQIReading;
-      aiSummary: {
-        brief: string;
-        detailed: string;
-        recommendation: string;
-        insight: string;
-      };
-    };
-    weather: {
-      raw: WeatherData;
-      aiSummary: {
-        brief: string;
-        detailed: string;
-        impact: string;
-        uvAlert?: string;
-      };
-    };
-    forecast24h: {
-      raw: {
-        generatedAt: string;
-        modelVersion: string;
-        modelConfidence: number;
-        hourly: any[];
-        summary?: {
-          best: { timestamp: string; aqi: number; hour: string };
-          worst: { timestamp: string; aqi: number; hour: string };
-          trend: string;
-        };
-      };
-      aiSummary: {
-        brief: string;
-        detailed: string;
-        recommendations: string[];
-        keyInsights: string;
-      };
-    };
-    dataSources?: {
-      raw: {
-        tempo: {
-          aqi: number | null;
-          available: boolean;
-          pollutants?: Record<string, number | null>;
-          coverage?: string;
-          spatialResolution?: string;
-          lastUpdate?: string;
-          confidence?: number;
-        };
-        ground: {
-          aqi: number | null;
-          available: boolean;
-          stationCount: number;
-          nearestStation?: string | null;
-          lastUpdate?: string | null;
-          confidence?: number;
-        };
-        aggregated: {
-          aqi: number;
-          method?: string;
-          weights?: Record<string, number>;
-          confidence?: number;
-        };
-      };
-      aiSummary: {
-        brief: string;
-        detailed: string;
-        validation: string;
-        dataQuality: string;
-      };
-    };
-    historical7d: {
-      raw: {
-        readings: AQIReading[];
-        statistics: {
-          average: number;
-          min: number;
-          max: number;
-          trend: {
-            direction: 'improving' | 'worsening' | 'stable';
-            percentage: number;
-          };
-        };
-      };
-      aiSummary: {
-        brief: string;
-        detailed: string;
-        trendAnalysis: string;
-      };
-    };
-    healthAlerts: {
-      raw: {
-        activeAlerts: HealthAlert[];
-      };
-      aiSummary: {
-        brief: string;
-        detailed: string;
-        riskLevel: string;
-      };
-    };
-    insights: {
-      comparative: {
-        vsYesterday: {
-          change: number;
-          direction: 'better' | 'worse' | 'same';
-          text: string;
-        };
-      };
-      personalizedTips: string[];
-      nextMilestone: string;
-    };
-    metadata: {
-      processingTime: number;
-      nextUpdate: string;
-      dataSourcesUsed: string[];
-    };
-  };
+  data: DashboardData;
 }
 
 interface APIError {
@@ -261,23 +147,31 @@ class AirQualityAPIClient {
   }
 
   /**
-   * Get complete dashboard data
+   * Get complete dashboard data with optional persona-specific insights
    */
   async getDashboard(
     latitude: number,
-    longitude: number
+    longitude: number,
+    persona?: PersonaType
   ): Promise<DashboardResponse['data']> {
-    console.log(`[API] getDashboard called for lat=${latitude}, lon=${longitude}`);
+    console.log(`[API] getDashboard called for lat=${latitude}, lon=${longitude}, persona=${persona || 'general'}`);
     const startTime = Date.now();
+
+    const requestBody: any = {
+      latitude,
+      longitude,
+    };
+
+    // Include persona if provided
+    if (persona) {
+      requestBody.persona = persona;
+    }
 
     const response = await this.request<DashboardResponse>(
       API_ENDPOINTS.DASHBOARD,
       {
         method: 'POST',
-        body: JSON.stringify({
-          latitude,
-          longitude,
-        }),
+        body: JSON.stringify(requestBody),
       }
     );
 
@@ -300,6 +194,15 @@ class AirQualityAPIClient {
     }
     if (!response.data.forecast24h) {
       console.warn('[API] Missing forecast24h in response');
+    }
+
+    // Log persona insights if present
+    if (response.data.personaInsights) {
+      console.log('[API] Persona insights received:', {
+        immediate_action: response.data.personaInsights.immediate_action?.substring(0, 50) + '...',
+        time_windows: response.data.personaInsights.time_windows?.length || 0,
+        recommendations: response.data.personaInsights.recommendations?.length || 0,
+      });
     }
 
     return response.data;

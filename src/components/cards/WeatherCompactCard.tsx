@@ -5,11 +5,20 @@ import { Card, CardContent } from '../ui/Card';
 import { WeatherData } from '../../types/airQuality';
 import { useTheme } from '../../hooks/useTheme';
 
-interface WeatherCompactCardProps {
-  weather: WeatherData;
+interface AISummary {
+  brief: string;
+  detailed?: string;
+  recommendation?: string;
+  insight?: string;
+  [key: string]: string | string[] | undefined;
 }
 
-export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather }) => {
+interface WeatherCompactCardProps {
+  weather: WeatherData;
+  aiSummary?: AISummary;
+}
+
+export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather, aiSummary }) => {
   const theme = useTheme();
   const navigation = useNavigation();
   const styles = createStyles(theme);
@@ -29,29 +38,32 @@ export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather 
   return (
     <TouchableOpacity
       activeOpacity={0.7}
-      onPress={() => navigation.navigate('WeatherDetail' as never)}
+      onPress={() => navigation.navigate('WeatherDetail' as never, {
+        weather,
+        aiSummary,
+      } as never)}
       style={styles.touchable}
     >
       <Card variant="elevated" style={styles.card}>
         <CardContent style={styles.content}>
-        <Text style={styles.label}>WEATHER</Text>
-        <TouchableOpacity onPress={handleTemperatureTap} activeOpacity={0.7}>
-          <Text style={styles.temperature}>{temperature}{unit}</Text>
-        </TouchableOpacity>
-        <Text style={styles.conditions}>{weather.conditions}</Text>
+          <Text style={styles.label}>WEATHER</Text>
+          <TouchableOpacity onPress={handleTemperatureTap} activeOpacity={0.7}>
+            <Text style={styles.temperature}>{temperature}{unit}</Text>
+          </TouchableOpacity>
+          <Text style={styles.conditions}>{weather.conditions}</Text>
 
-        <View style={styles.details}>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Wind</Text>
-            <Text style={styles.detailValue}>{Math.round(weather.windSpeed)} km/h</Text>
+          <View style={styles.details}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Wind</Text>
+              <Text style={styles.detailValue}>{Math.round(weather.windSpeed)} km/h</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Humidity</Text>
+              <Text style={styles.detailValue}>{Math.round(weather.humidity)}%</Text>
+            </View>
           </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Humidity</Text>
-            <Text style={styles.detailValue}>{Math.round(weather.humidity)}%</Text>
-          </View>
-        </View>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </TouchableOpacity>
   );
 };

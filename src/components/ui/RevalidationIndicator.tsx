@@ -10,6 +10,7 @@ import { useTheme } from '../../hooks/useTheme';
 interface RevalidationIndicatorProps {
   isValidating: boolean;
   lastUpdated?: Date | null;
+  isPullRefreshing?: boolean;
 }
 
 /**
@@ -19,14 +20,17 @@ interface RevalidationIndicatorProps {
 export const RevalidationIndicator: React.FC<RevalidationIndicatorProps> = ({
   isValidating,
   lastUpdated,
+  isPullRefreshing = false,
 }) => {
   const theme = useTheme();
   const styles = createStyles(theme);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+  const [showTimestamp, setShowTimestamp] = React.useState(true);
 
   useEffect(() => {
-    if (isValidating) {
+    // Only show spinner for background revalidation, not pull-to-refresh
+    if (isValidating && !isPullRefreshing) {
       // Fade in and start rotation
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -51,7 +55,18 @@ export const RevalidationIndicator: React.FC<RevalidationIndicatorProps> = ({
       }).start();
       rotateAnim.setValue(0);
     }
-  }, [isValidating, fadeAnim, rotateAnim]);
+  }, [isValidating, isPullRefreshing, fadeAnim, rotateAnim]);
+
+  // Hide timestamp after 5 seconds
+  useEffect(() => {
+    if (!isValidating && lastUpdated) {
+      setShowTimestamp(true);
+      const timeout = setTimeout(() => {
+        setShowTimestamp(false);
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isValidating, lastUpdated]);
 
   const spin = rotateAnim.interpolate({
     inputRange: [0, 1],
@@ -71,7 +86,7 @@ export const RevalidationIndicator: React.FC<RevalidationIndicatorProps> = ({
 
   return (
     <View style={styles.container}>
-      {isValidating && (
+      {isValidating && !isPullRefreshing && (
         <Animated.View
           style={[
             styles.indicator,
@@ -84,7 +99,7 @@ export const RevalidationIndicator: React.FC<RevalidationIndicatorProps> = ({
           <View style={styles.spinner} />
         </Animated.View>
       )}
-      {!isValidating && lastUpdated && (
+      {!isValidating && lastUpdated && showTimestamp && (
         <Text style={styles.timestamp}>
           Updated {formatLastUpdated(lastUpdated)}
         </Text>
@@ -99,7 +114,8 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: theme.spacing.xs,
+      paddingVertical: 0,
+      marginBottom: theme.spacing.xs,
     },
     indicator: {
       flexDirection: 'row',
