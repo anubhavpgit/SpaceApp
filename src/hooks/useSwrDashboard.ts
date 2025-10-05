@@ -3,7 +3,7 @@
  * Implements Stale-While-Revalidate pattern with multi-layer caching
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { airQualityAPI } from '../api/client';
 import { useLocation } from '../contexts/LocationContext';
@@ -183,31 +183,7 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
       lon: location.longitude,
     });
 
-    // Check L2 cache (AsyncStorage) first
-    if (cacheKey) {
-      const cached = await cacheManager.get<DashboardData>(cacheKey);
-      if (cached) {
-        console.log('[useSwrDashboard] Returning cached data, revalidating in background');
-        // Schedule background revalidation
-        setTimeout(async () => {
-          try {
-            const response = await airQualityAPI.getDashboard(
-              location.latitude!,
-              location.longitude!
-            );
-            const fresh = transformDashboardData(response);
-            await cacheManager.set(cacheKey, fresh);
-            console.log('[useSwrDashboard] Background revalidation completed');
-          } catch (error) {
-            console.error('[useSwrDashboard] Background revalidation failed:', error);
-          }
-        }, 100);
-
-        return cached;
-      }
-    }
-
-    // Fetch fresh data
+    // Fetch fresh data from API
     const response = await airQualityAPI.getDashboard(
       location.latitude,
       location.longitude
@@ -226,7 +202,7 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
 
     const dashboardData = transformDashboardData(response);
 
-    // Cache the fresh data
+    // Cache the fresh data in L2 (AsyncStorage) for persistence
     if (cacheKey) {
       await cacheManager.set(cacheKey, dashboardData);
     }
@@ -234,11 +210,28 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
     return dashboardData;
   };
 
+  // Load initial data from L2 cache (AsyncStorage) for instant display
+  const [fallbackData, setFallbackData] = useState<DashboardData | undefined>();
+
+  useEffect(() => {
+    if (cacheKey) {
+      cacheManager.get<DashboardData>(cacheKey).then((cached) => {
+        if (cached) {
+          console.log('[useSwrDashboard] Loaded fallback data from L2 cache');
+          setFallbackData(cached);
+        }
+      });
+    }
+  }, [cacheKey]);
+
   // Use SWR with the generated cache key
   const { data, error, isValidating, mutate } = useSWR<DashboardData, Error>(
     cacheKey,
     fetcher,
     {
+      // Use fallback data from AsyncStorage for instant display
+      fallbackData,
+
       // Keep previous data while revalidating for smooth transitions
       keepPreviousData: true,
 
@@ -249,14 +242,14 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
       // Background refresh every 15 minutes (architecture spec)
       refreshInterval: 15 * 60 * 1000,
 
-      // Deduplicate requests within 2 seconds
+      // Deduplicate requests within 2 seconds - prevents duplicate calls
       dedupingInterval: 2000,
 
       // Error retry configuration
       errorRetryCount: 3,
       errorRetryInterval: 5000,
 
-      // Don't revalidate if stale for performance
+      // Revalidate stale data
       revalidateIfStale: true,
 
       // Optimize for mobile

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
-import { useDashboardData } from '../hooks/useDashboardData';
+import { useSwrDashboard } from '../hooks/useSwrDashboard';
 import { Card, CardContent } from '../components/ui/Card';
 
 export default function WeatherDetailScreen() {
@@ -11,7 +11,7 @@ export default function WeatherDetailScreen() {
   const navigation = useNavigation();
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { data, loading } = useDashboardData();
+  const { data, loading } = useSwrDashboard();
   const [useFahrenheit, setUseFahrenheit] = useState(true);
 
   const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5) + 32;

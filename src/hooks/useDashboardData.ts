@@ -1,6 +1,11 @@
 /**
  * Dashboard Data Hook
  * Manages fetching and caching of dashboard data from Flask backend
+ *
+ * @deprecated This hook is deprecated. Use useSwrDashboard instead for better
+ * caching, deduplication, and performance with SWR (Stale-While-Revalidate).
+ *
+ * This hook will be removed in a future version.
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
