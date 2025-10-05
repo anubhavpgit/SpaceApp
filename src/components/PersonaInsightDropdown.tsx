@@ -89,9 +89,12 @@ interface PersonaInsightDropdownProps {
 export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ insights, liveWeatherReport, isLoading = false }) => {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const { persona, setPersona } = usePersona();
+  const { persona, setPersona, isChangingPersona } = usePersona();
   const [expanded, setExpanded] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+
+  // Combine loading states
+  const showLoader = isLoading || isChangingPersona;
 
   const selectedPersona = PERSONAS.find(p => p.type === persona);
   const selectedPersonaLabel = selectedPersona?.label || 'Select Role';
@@ -129,7 +132,7 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
 
   return (
     <View style={styles.container}>
-      <Card variant="elevated" style={styles.card}>
+      <Card variant="elevated" style={[styles.card, isChangingPersona && styles.cardDisabled]}>
         <CardContent style={styles.cardContent}>
           {/* Header - Always Visible */}
           <View style={styles.header}>
@@ -141,8 +144,9 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
 
             <TouchableOpacity
               style={styles.personaButton}
-              onPress={() => setModalVisible(true)}
+              onPress={() => !isChangingPersona && setModalVisible(true)}
               activeOpacity={0.7}
+              disabled={isChangingPersona}
             >
               <View style={styles.personaInfo}>
                 <Text style={styles.label}>YOUR ROLE</Text>
@@ -151,9 +155,9 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
               <Text style={styles.editIcon}>›</Text>
             </TouchableOpacity>
 
-            {(insights || liveWeatherReport || isLoading) && (
+            {(insights || liveWeatherReport || showLoader) && (
               <View style={styles.expandButton}>
-                {isLoading ? (
+                {showLoader ? (
                   <ActivityIndicator size="small" color={theme.colors.text.primary} />
                 ) : (
                   <TouchableOpacity
@@ -287,6 +291,9 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
     },
     card: {
       marginBottom: 0,
+    },
+    cardDisabled: {
+      opacity: 0.6,
     },
     cardContent: {
       paddingVertical: theme.spacing.lg,

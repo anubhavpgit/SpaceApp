@@ -14,6 +14,7 @@ interface PersonaContextType {
   setPersona: (persona: PersonaType) => Promise<void>;
   resetPersona: () => Promise<void>;
   isLoading: boolean;
+  isChangingPersona: boolean;
 }
 
 const PersonaContext = createContext<PersonaContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ interface PersonaProviderProps {
 export const PersonaProvider: React.FC<PersonaProviderProps> = ({ children }) => {
   const [persona, setPersonaState] = useState<PersonaType>('general');
   const [isLoading, setIsLoading] = useState(true);
+  const [isChangingPersona, setIsChangingPersona] = useState(false);
 
   // Load persona from storage on mount
   useEffect(() => {
@@ -50,11 +52,15 @@ export const PersonaProvider: React.FC<PersonaProviderProps> = ({ children }) =>
   const setPersona = async (newPersona: PersonaType) => {
     try {
       console.log('[PersonaContext] Setting persona:', newPersona);
+      setIsChangingPersona(true);
       setPersonaState(newPersona);
       await AsyncStorage.setItem(PERSONA_STORAGE_KEY, newPersona);
       console.log('[PersonaContext] Persona saved to storage');
+      // Keep loading state active briefly to allow data refetch
+      setTimeout(() => setIsChangingPersona(false), 500);
     } catch (error) {
       console.error('[PersonaContext] Error saving persona:', error);
+      setIsChangingPersona(false);
       throw error;
     }
   };
@@ -72,7 +78,7 @@ export const PersonaProvider: React.FC<PersonaProviderProps> = ({ children }) =>
   };
 
   return (
-    <PersonaContext.Provider value={{ persona, setPersona, resetPersona, isLoading }}>
+    <PersonaContext.Provider value={{ persona, setPersona, resetPersona, isLoading, isChangingPersona }}>
       {children}
     </PersonaContext.Provider>
   );

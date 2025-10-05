@@ -180,7 +180,7 @@ export default function DashboardScreen() {
         <PersonaInsightDropdown
           insights={data.personaInsights}
           liveWeatherReport={data.liveWeatherReport}
-          isLoading={loading}
+          isLoading={loading || isValidating}
         />
 
         {/* Health Alerts - Compact */}
