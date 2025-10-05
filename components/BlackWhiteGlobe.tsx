@@ -10,6 +10,9 @@ import { usePersona } from '../src/contexts/PersonaContext';
 // Import pre-computed globe dots (INSTANT LOAD - NO COMPUTATION!)
 const precomputedDots = require('../assets/globe/globe-dots.json');
 
+// Note: Globe dots use 90° longitude offset coordinate system
+// Click detection applies -90° correction to match geographic coordinates
+
 // Clean Dark Mode Theme: White globe with black dots
 const THEME = {
   background: '#000000',
@@ -17,6 +20,7 @@ const THEME = {
   points: '#000000',
   atmosphere: '#ffffff',
 };
+
 
 interface GlobeSceneProps {
   rotation: { x: number; y: number };
@@ -92,7 +96,7 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
   // Handle tap on globe to get coordinates
   const handleTap = useCallback(
     (x: number, y: number) => {
-      if (!globeRef.current) return;
+      if (!globeRef.current || !groupRef.current) return;
 
       const mouse = new THREE.Vector2();
       mouse.x = (x / size.width) * 2 - 1;
@@ -103,10 +107,28 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
 
       if (intersects.length > 0) {
         const point = intersects[0].point;
-        const lat = Math.asin(point.y / 2) * (180 / Math.PI);
-        const lng = Math.atan2(point.z, -point.x) * (180 / Math.PI) - 180;
 
-        console.log(`[Globe] Selected: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        // Transform point from world space to globe's local coordinate space
+        // This accounts for the globe's rotation
+        // IMPORTANT: Update the group's world matrix first to ensure accurate transformation
+        groupRef.current.updateMatrixWorld(true);
+
+        const localPoint = point.clone();
+        groupRef.current.worldToLocal(localPoint);
+
+        // Normalize the point to ensure it's on the sphere surface
+        // This handles any precision issues from raycasting
+        localPoint.normalize().multiplyScalar(2); // radius = 2
+
+        // Calculate latitude and longitude from local coordinates
+        // CRITICAL FIX: Globe dots use 90° offset longitude system
+        const radius = Math.sqrt(localPoint.x ** 2 + localPoint.y ** 2 + localPoint.z ** 2);
+        const phi = Math.acos(localPoint.y / radius);
+        const lat = 90 - (phi * 180 / Math.PI);
+
+        // Globe dots use 90° offset: subtract 90° to get geographic longitude
+        const lng = Math.atan2(localPoint.x, localPoint.z) * 180 / Math.PI - 90;
+
         onTap(lat, lng);
       }
     },
@@ -153,6 +175,7 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
           side={THREE.BackSide}
         />
       </mesh>
+
     </group>
   );
 }
