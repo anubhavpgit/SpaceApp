@@ -15,10 +15,11 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  ActivityIndicator,
 } from 'react-native';
 import { useTheme } from '../hooks/useTheme';
 import { usePersona } from '../contexts/PersonaContext';
-import { PersonaType, PersonaInsights } from '../types/airQuality';
+import { PersonaType, PersonaInsights, LiveWeatherReport } from '../types/airQuality';
 import { Card, CardContent } from './ui/Card';
 
 // Enable LayoutAnimation on Android
@@ -81,9 +82,11 @@ const PERSONAS: Array<{ type: PersonaType; label: string; description: string }>
 
 interface PersonaInsightDropdownProps {
   insights?: PersonaInsights;
+  liveWeatherReport?: LiveWeatherReport;
+  isLoading?: boolean;
 }
 
-export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ insights }) => {
+export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ insights, liveWeatherReport, isLoading = false }) => {
   const theme = useTheme();
   const styles = createStyles(theme);
   const { persona, setPersona } = usePersona();
@@ -130,6 +133,12 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
         <CardContent style={styles.cardContent}>
           {/* Header - Always Visible */}
           <View style={styles.header}>
+            {liveWeatherReport && (
+              <View style={styles.liveBadge}>
+                <Text style={styles.liveBadgeText}>LIVE</Text>
+              </View>
+            )}
+
             <TouchableOpacity
               style={styles.personaButton}
               onPress={() => setModalVisible(true)}
@@ -139,85 +148,71 @@ export const PersonaInsightDropdown: React.FC<PersonaInsightDropdownProps> = ({ 
                 <Text style={styles.label}>YOUR ROLE</Text>
                 <Text style={styles.selectedValue}>{selectedPersonaLabel}</Text>
               </View>
-              <Text style={styles.editIcon}>✏️</Text>
+              <Text style={styles.editIcon}>›</Text>
             </TouchableOpacity>
 
-            {insights && (
-              <TouchableOpacity
-                style={styles.expandButton}
-                onPress={toggleExpanded}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.expandIcon}>{expanded ? '−' : '+'}</Text>
-              </TouchableOpacity>
+            {(insights || liveWeatherReport || isLoading) && (
+              <View style={styles.expandButton}>
+                {isLoading ? (
+                  <ActivityIndicator size="small" color={theme.colors.text.primary} />
+                ) : (
+                  <TouchableOpacity
+                    onPress={toggleExpanded}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.expandIcon}>{expanded ? '−' : '+'}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             )}
           </View>
 
-          {/* Expanded Content - Persona Insights */}
-          {expanded && insights && (
+          {/* Expanded Content - Simplified */}
+          {expanded && (insights || liveWeatherReport) && (
             <View style={styles.expandedContent}>
-              {/* Risk Assessment */}
-              <View style={styles.riskHeader}>
-                <Text style={styles.sectionLabel}>WHAT THIS MEANS FOR YOU</Text>
-                <View style={[styles.riskBadge, { backgroundColor: getRiskColor() + '20' }]}>
-                  <View style={[styles.riskDot, { backgroundColor: getRiskColor() }]} />
-                  <Text style={[styles.riskText, { color: getRiskColor() }]}>
-                    {insights.risk_assessment.level.toUpperCase()}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Immediate Action */}
-              <View style={styles.immediateActionContainer}>
-                <Text style={styles.immediateActionLabel}>IMMEDIATE ACTION</Text>
-                <Text style={styles.immediateActionText}>{insights.immediate_action}</Text>
-              </View>
-
-              {/* Context */}
-              {insights.context && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionLabel}>WHY THIS MATTERS</Text>
-                  <Text style={styles.contextText}>{insights.context}</Text>
+              {/* Live Weather Headline */}
+              {liveWeatherReport && (
+                <View style={styles.liveSection}>
+                  <Text style={styles.liveHeadline}>{liveWeatherReport.headline}</Text>
+                  {liveWeatherReport.health_advisory && (
+                    <Text style={styles.healthAdvisory}>{liveWeatherReport.health_advisory}</Text>
+                  )}
                 </View>
               )}
 
-              {/* Recommendations */}
-              {insights.recommendations && insights.recommendations.length > 0 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionLabel}>ACTION ITEMS</Text>
-                  {insights.recommendations.map((rec, index) => (
-                    <View key={index} style={styles.recommendationItem}>
-                      <View style={styles.checkboxContainer}>
-                        <View style={styles.checkbox} />
-                      </View>
-                      <Text style={styles.recommendationText}>{rec}</Text>
-                    </View>
-                  ))}
+              {/* Main Insight */}
+              {insights && (
+                <View style={styles.mainInsight}>
+                  <View style={styles.insightHeader}>
+                    <View style={[styles.riskDot, { backgroundColor: getRiskColor() }]} />
+                    <Text style={styles.insightText}>{insights.immediate_action}</Text>
+                  </View>
                 </View>
               )}
 
-              {/* Time Windows */}
-              {insights.time_windows && insights.time_windows.length > 0 && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionLabel}>SAFE TIME WINDOWS</Text>
-                  {insights.time_windows.map((window, index) => (
-                    <View key={index} style={styles.timeWindow}>
-                      <View style={styles.timeHeader}>
-                        <Text style={styles.timeRange}>{window.start} - {window.end}</Text>
-                        <Text style={styles.aqiBadge}>AQI {window.aqi}</Text>
-                      </View>
-                      <Text style={styles.safeForText}>{window.safe_for}</Text>
-                      <Text style={styles.timeRecommendation}>{window.recommendation}</Text>
-                    </View>
-                  ))}
+              {/* Best Time Window (if available) */}
+              {insights?.time_windows && insights.time_windows.length > 0 && (
+                <View style={styles.timeWindowCompact}>
+                  <Text style={styles.timeWindowLabel}>Best time for outdoor activities</Text>
+                  <View style={styles.timeWindowRow}>
+                    <Text style={styles.timeWindowTime}>
+                      {insights.time_windows[0].start} - {insights.time_windows[0].end}
+                    </Text>
+                    <Text style={styles.timeWindowAqi}>AQI {insights.time_windows[0].aqi}</Text>
+                  </View>
                 </View>
               )}
 
-              {/* Key Insight */}
-              {insights.key_insight && (
-                <View style={[styles.section, styles.keyInsightSection]}>
-                  <Text style={styles.keyInsightLabel}>KEY INSIGHT</Text>
-                  <Text style={styles.keyInsightText}>{insights.key_insight}</Text>
+              {/* Top Recommendations (max 3) */}
+              {(liveWeatherReport?.recommendations || insights?.recommendations) && (
+                <View style={styles.recommendationsCompact}>
+                  {(liveWeatherReport?.recommendations || insights?.recommendations)
+                    ?.slice(0, 3)
+                    .map((rec, idx) => (
+                      <Text key={idx} style={styles.recommendationCompact}>
+                        • {rec}
+                      </Text>
+                    ))}
                 </View>
               )}
             </View>
@@ -301,6 +296,19 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       justifyContent: 'space-between',
       alignItems: 'center',
     },
+    liveBadge: {
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      paddingHorizontal: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: theme.borderRadius.sm,
+      marginRight: theme.spacing.sm,
+    },
+    liveBadgeText: {
+      fontSize: theme.typography.sizes.xs,
+      fontWeight: theme.typography.weights.bold,
+      color: '#EF4444',
+      letterSpacing: 1.2,
+    },
     personaButton: {
       flex: 1,
       flexDirection: 'row',
@@ -324,7 +332,9 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       color: theme.colors.text.primary,
     },
     editIcon: {
-      fontSize: theme.typography.sizes.base,
+      fontSize: 24,
+      fontWeight: theme.typography.weights.semibold,
+      color: theme.colors.text.secondary,
       marginLeft: theme.spacing.sm,
     },
     expandButton: {
@@ -339,149 +349,88 @@ const createStyles = (theme: ReturnType<typeof useTheme>) =>
       color: theme.colors.text.primary,
     },
     expandedContent: {
-      marginTop: theme.spacing.xl,
+      marginTop: theme.spacing.lg,
       paddingTop: theme.spacing.lg,
       borderTopWidth: 1,
       borderTopColor: theme.colors.border.light,
     },
-    riskHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+    // Live Section
+    liveSection: {
       marginBottom: theme.spacing.lg,
     },
-    riskBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: theme.spacing.xs,
-      paddingHorizontal: theme.spacing.md,
-      borderRadius: theme.borderRadius.full,
-    },
-    riskDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      marginRight: theme.spacing.xs,
-    },
-    riskText: {
-      fontSize: theme.typography.sizes.xs,
+    liveHeadline: {
+      fontSize: theme.typography.sizes.lg,
       fontWeight: theme.typography.weights.bold,
-    },
-    immediateActionContainer: {
-      backgroundColor: theme.colors.overlay.light,
-      borderRadius: theme.borderRadius.md,
-      padding: theme.spacing.lg,
-      marginBottom: theme.spacing.lg,
-    },
-    immediateActionLabel: {
-      fontSize: theme.typography.sizes.xs,
-      fontWeight: theme.typography.weights.bold,
-      color: theme.colors.text.muted,
-      letterSpacing: 1.2,
+      color: theme.colors.text.primary,
+      lineHeight: theme.typography.sizes.lg * 1.3,
       marginBottom: theme.spacing.sm,
     },
-    immediateActionText: {
-      fontSize: theme.typography.sizes.lg,
-      fontWeight: theme.typography.weights.semibold,
-      color: theme.colors.text.primary,
-      lineHeight: theme.typography.sizes.lg * 1.4,
-    },
-    section: {
-      marginBottom: theme.spacing.xl,
-    },
-    sectionLabel: {
-      fontSize: theme.typography.sizes.xs,
-      fontWeight: theme.typography.weights.bold,
-      color: theme.colors.text.muted,
-      letterSpacing: 1.2,
-      marginBottom: theme.spacing.md,
-    },
-    contextText: {
+    healthAdvisory: {
       fontSize: theme.typography.sizes.sm,
       fontWeight: theme.typography.weights.regular,
       color: theme.colors.text.secondary,
-      lineHeight: theme.typography.sizes.sm * 1.6,
+      lineHeight: theme.typography.sizes.sm * 1.5,
     },
-    recommendationItem: {
+    // Main Insight
+    mainInsight: {
+      marginBottom: theme.spacing.lg,
+    },
+    insightHeader: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      marginBottom: theme.spacing.md,
+    },
+    insightText: {
+      flex: 1,
+      fontSize: theme.typography.sizes.base,
+      fontWeight: theme.typography.weights.semibold,
+      color: theme.colors.text.primary,
+      lineHeight: theme.typography.sizes.base * 1.5,
+      marginLeft: theme.spacing.md,
+    },
+    // Time Window
+    timeWindowCompact: {
       backgroundColor: theme.colors.overlay.light,
       padding: theme.spacing.md,
       borderRadius: theme.borderRadius.md,
+      marginBottom: theme.spacing.lg,
     },
-    checkboxContainer: {
-      marginRight: theme.spacing.md,
-      marginTop: 2,
+    timeWindowLabel: {
+      fontSize: theme.typography.sizes.xs,
+      fontWeight: theme.typography.weights.semibold,
+      color: theme.colors.text.muted,
+      marginBottom: theme.spacing.xs,
     },
-    checkbox: {
-      width: 20,
-      height: 20,
-      borderWidth: 2,
-      borderColor: theme.colors.text.muted,
-      borderRadius: 4,
-    },
-    recommendationText: {
-      flex: 1,
-      fontSize: theme.typography.sizes.sm,
-      fontWeight: theme.typography.weights.medium,
-      color: theme.colors.text.primary,
-      lineHeight: theme.typography.sizes.sm * 1.5,
-    },
-    timeWindow: {
-      backgroundColor: theme.colors.overlay.light,
-      padding: theme.spacing.lg,
-      borderRadius: theme.borderRadius.md,
-      marginBottom: theme.spacing.md,
-    },
-    timeHeader: {
+    timeWindowRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: theme.spacing.sm,
     },
-    timeRange: {
+    timeWindowTime: {
       fontSize: theme.typography.sizes.base,
       fontWeight: theme.typography.weights.bold,
       color: theme.colors.text.primary,
     },
-    aqiBadge: {
+    timeWindowAqi: {
       fontSize: theme.typography.sizes.sm,
       fontWeight: theme.typography.weights.semibold,
       color: theme.colors.text.secondary,
     },
-    safeForText: {
-      fontSize: theme.typography.sizes.sm,
-      fontWeight: theme.typography.weights.medium,
-      color: theme.colors.text.secondary,
-      marginBottom: theme.spacing.xs,
+    // Recommendations
+    recommendationsCompact: {
+      marginTop: theme.spacing.sm,
     },
-    timeRecommendation: {
+    recommendationCompact: {
       fontSize: theme.typography.sizes.sm,
       fontWeight: theme.typography.weights.regular,
-      color: theme.colors.text.tertiary,
-      lineHeight: theme.typography.sizes.sm * 1.4,
+      color: theme.colors.text.secondary,
+      lineHeight: theme.typography.sizes.sm * 1.6,
+      marginBottom: theme.spacing.xs,
     },
-    keyInsightSection: {
-      backgroundColor: theme.colors.overlay.light,
-      padding: theme.spacing.lg,
-      borderRadius: theme.borderRadius.md,
-      borderLeftWidth: 4,
-      borderLeftColor: theme.colors.text.primary,
-    },
-    keyInsightLabel: {
-      fontSize: theme.typography.sizes.xs,
-      fontWeight: theme.typography.weights.bold,
-      color: theme.colors.text.muted,
-      letterSpacing: 1.2,
-      marginBottom: theme.spacing.sm,
-    },
-    keyInsightText: {
-      fontSize: theme.typography.sizes.sm,
-      fontWeight: theme.typography.weights.medium,
-      color: theme.colors.text.primary,
-      lineHeight: theme.typography.sizes.sm * 1.5,
-      fontStyle: 'italic',
+    riskDot: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      marginTop: 4,
     },
     // Modal styles
     modalOverlay: {

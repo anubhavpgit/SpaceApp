@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useLocation } from '../contexts/LocationContext';
+import { usePersona } from '../contexts/PersonaContext';
 import { useTheme } from '../hooks/useTheme';
 import { useSwrDashboard } from '../hooks/useSwrDashboard';
 import { ScrubbingTimeline } from '../components/ui/ScrubbingTimeline';
@@ -20,10 +21,19 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { location } = useLocation();
+  const { persona } = usePersona();
   const theme = useTheme();
   const { data, loading, error, isValidating, mutate, lastUpdated } = useSwrDashboard();
   const [selectedForecast, setSelectedForecast] = useState<ForecastItem | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // NOTE: Removed persona change useEffect that was calling mutate()
+  // SWR automatically refetches when cache key changes (which includes persona)
+  // The duplicate mutate() call was causing two API requests
+  useEffect(() => {
+    console.log('[DashboardScreen] Persona changed to:', persona);
+    console.log('[DashboardScreen] SWR will auto-fetch via cache key change - no manual mutate needed');
+  }, [persona]);
 
   console.log('[DashboardScreen] Render state:', {
     locationLoading: location.isLoading,
@@ -37,6 +47,9 @@ export default function DashboardScreen() {
     hasPollutants: data?.currentAQI?.pollutants ? Object.keys(data.currentAQI.pollutants).length : 0,
     hasHistorical: data?.historicalReadings?.length || 0,
     historicalReadings: data?.historicalReadings,
+    hasPersonaInsights: !!data?.personaInsights,
+    hasLiveWeatherReport: !!data?.liveWeatherReport,
+    liveWeatherReportHeadline: data?.liveWeatherReport?.headline || 'N/A',
   });
 
   const handleForecastScrub = (forecast: ForecastItem) => {
@@ -163,8 +176,12 @@ export default function DashboardScreen() {
           </View>
         </AnimatedDataView>
 
-        {/* Persona Selector & Insights Dropdown */}
-        <PersonaInsightDropdown insights={data.personaInsights} />
+        {/* Persona Selector & Insights with Live Report */}
+        <PersonaInsightDropdown
+          insights={data.personaInsights}
+          liveWeatherReport={data.liveWeatherReport}
+          isLoading={loading}
+        />
 
         {/* Health Alerts - Compact */}
         {data.healthAlerts && data.healthAlerts.length > 0 && data.healthAlerts.map((alert) => (

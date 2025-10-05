@@ -7,6 +7,7 @@ import { useMemo, useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { airQualityAPI } from '../api/client';
 import { useLocation } from '../contexts/LocationContext';
+import { usePersona } from '../contexts/PersonaContext';
 import { CacheKeys } from '../config/swr';
 import { cacheManager } from '../services/cacheManager';
 import {
@@ -14,6 +15,7 @@ import {
   AirQualityForecast,
   HealthAlert,
   WeatherData,
+  LiveWeatherReport,
 } from '../types/airQuality';
 
 interface AISummary {
@@ -59,6 +61,7 @@ interface DashboardData {
     personalizedTips: string[];
   };
   personaInsights?: any;
+  liveWeatherReport?: LiveWeatherReport;
 }
 
 interface UseSwrDashboardReturn {
@@ -163,6 +166,7 @@ const transformDashboardData = (response: any): DashboardData => {
       personalizedTips: response.insights?.personalizedTips || [],
     },
     personaInsights: response.personaInsights,
+    liveWeatherReport: response.liveWeatherReport,
   };
 };
 
@@ -176,12 +180,14 @@ const transformDashboardData = (response: any): DashboardData => {
  */
 export const useSwrDashboard = (): UseSwrDashboardReturn => {
   const { location } = useLocation();
+  const { persona } = usePersona();
 
-  // Generate cache key based on location
+  // Generate cache key based on location AND persona
   const cacheKey = useMemo(() => {
     if (!location.latitude || !location.longitude || location.isLoading) return null;
-    return CacheKeys.dashboard(location.latitude, location.longitude);
-  }, [location.latitude, location.longitude, location.isLoading]);
+    // Include persona in cache key so different personas get different cache entries
+    return `${CacheKeys.dashboard(location.latitude, location.longitude)}_${persona}`;
+  }, [location.latitude, location.longitude, location.isLoading, persona]);
 
   // Fetcher function that integrates with cache manager
   const fetcher = async () => {
@@ -192,12 +198,14 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
     console.log('[useSwrDashboard] Fetching dashboard data for:', {
       lat: location.latitude,
       lon: location.longitude,
+      persona,
     });
 
-    // Fetch fresh data from API
+    // Fetch fresh data from API with persona
     const response = await airQualityAPI.getDashboard(
       location.latitude,
-      location.longitude
+      location.longitude,
+      persona
     );
 
     // Validate required data

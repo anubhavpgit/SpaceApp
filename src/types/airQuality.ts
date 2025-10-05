@@ -201,6 +201,18 @@ export interface AISummary {
   [key: string]: string | string[];  // Allow for additional fields like recommendations, insight, etc.
 }
 
+// Live Weather Report (web search based)
+export interface LiveWeatherReport {
+  headline: string;
+  current_conditions: string;
+  local_alerts: string;
+  health_advisory: string;
+  trending_info: string;
+  recommendations: string[];
+  sources: string;
+  next_update: string;
+}
+
 // Dashboard Data with Persona Support
 export interface DashboardData {
   location: {
@@ -276,4 +288,5 @@ export interface DashboardData {
   };
   personaInsights?: PersonaInsights;  // Optional - only present if persona selected
   persona?: PersonaType;               // Current persona if selected
+  liveWeatherReport?: LiveWeatherReport;  // Optional - live web search report for persona
 }

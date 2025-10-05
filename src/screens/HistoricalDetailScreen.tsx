@@ -203,7 +203,7 @@ export default function HistoricalDetailScreen() {
           <Card variant="elevated" style={styles.statCard}>
             <CardContent style={styles.statContent}>
               <Text style={styles.statLabel}>AVERAGE</Text>
-              <Text style={styles.statValue}>{avgAQI}</Text>
+              <Text style={styles.statValueSmall}>{avgAQI}</Text>
               <Text style={styles.statUnit}>AQI</Text>
             </CardContent>
           </Card>
@@ -522,7 +522,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     marginBottom: 2,
   },
   statValueSmall: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.text.primary,
     letterSpacing: -0.5,

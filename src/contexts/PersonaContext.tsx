@@ -12,6 +12,7 @@ const PERSONA_STORAGE_KEY = '@clearskies:selectedPersona';
 interface PersonaContextType {
   persona: PersonaType;
   setPersona: (persona: PersonaType) => Promise<void>;
+  resetPersona: () => Promise<void>;
   isLoading: boolean;
 }
 
@@ -58,8 +59,20 @@ export const PersonaProvider: React.FC<PersonaProviderProps> = ({ children }) =>
     }
   };
 
+  const resetPersona = async () => {
+    try {
+      console.log('[PersonaContext] Resetting persona to general');
+      setPersonaState('general');
+      await AsyncStorage.setItem(PERSONA_STORAGE_KEY, 'general');
+      console.log('[PersonaContext] Persona reset to general');
+    } catch (error) {
+      console.error('[PersonaContext] Error resetting persona:', error);
+      throw error;
+    }
+  };
+
   return (
-    <PersonaContext.Provider value={{ persona, setPersona, isLoading }}>
+    <PersonaContext.Provider value={{ persona, setPersona, resetPersona, isLoading }}>
       {children}
     </PersonaContext.Provider>
   );
