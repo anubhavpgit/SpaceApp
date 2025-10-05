@@ -51,22 +51,22 @@ export const AirQualityCompactCard: React.FC<AirQualityCompactCardProps> = ({
     >
       <Card variant="elevated" style={styles.card}>
         <CardContent style={styles.content}>
-        <Text style={styles.label}>AIR QUALITY</Text>
-        <Text style={styles.mainValue}>{Math.round(pollutants?.pm25 ?? 0)}</Text>
-        <Text style={styles.mainUnit}>PM2.5 μg/m³</Text>
+          <Text style={styles.label}>AIR QUALITY</Text>
+          <Text style={styles.mainValue}>{Math.round(pollutants?.pm25 ?? 0)}</Text>
+          <Text style={styles.mainUnit}>PM2.5 μg/m³</Text>
 
-        <View style={styles.details}>
-          {topPollutants.slice(1).map((pollutant) => (
-            <View key={pollutant.key} style={styles.detailRow}>
-              <Text style={styles.detailLabel}>{pollutant.name}</Text>
-              <Text style={styles.detailValue}>
-                {(pollutant.value ?? 0).toFixed(0)} {pollutant.unit}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </CardContent>
-    </Card>
+          <View style={styles.details}>
+            {topPollutants.slice(1).map((pollutant) => (
+              <View key={pollutant.key} style={styles.detailRow}>
+                <Text style={styles.detailLabel}>{pollutant.name}</Text>
+                <Text style={styles.detailValue}>
+                  {(pollutant.value ?? 0).toFixed(0)} {pollutant.unit}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </CardContent>
+      </Card>
     </TouchableOpacity>
   );
 };
@@ -77,7 +77,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   },
   card: {},
   content: {
-    paddingVertical: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
   },
   label: {
     fontSize: 10,
@@ -111,6 +111,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.regular,
     color: theme.colors.text.tertiary,
+    paddingVertical: 2,
   },
   detailValue: {
     fontSize: theme.typography.sizes.sm,

@@ -25,7 +25,7 @@ export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather,
   const styles = createStyles(theme);
   const [useFahrenheit, setUseFahrenheit] = useState(true);
 
-  const celsiusToFahrenheit = (celsius: number) => (celsius * 9/5) + 32;
+  const celsiusToFahrenheit = (celsius: number) => (celsius * 9 / 5) + 32;
   const temperature = useFahrenheit
     ? Math.round(celsiusToFahrenheit(weather.temperature))
     : Math.round(weather.temperature);
@@ -49,7 +49,7 @@ export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather,
         <CardContent style={styles.content}>
           <Text style={styles.label}>WEATHER</Text>
           <TouchableOpacity onPress={handleTemperatureTap} activeOpacity={0.7}>
-            <Text style={styles.temperature}>{temperature}{unit}</Text>
+            <Text style={styles.temperature}>{temperature} {unit}</Text>
           </TouchableOpacity>
           <Text style={styles.conditions}>{weather.conditions}</Text>
 
@@ -72,11 +72,11 @@ export const WeatherCompactCard: React.FC<WeatherCompactCardProps> = ({ weather,
 const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
   touchable: {
     flex: 1,
-    marginRight: theme.spacing.lg,
+    marginRight: theme.spacing.md,
   },
   card: {},
   content: {
-    paddingVertical: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
   },
   label: {
     fontSize: 10,
@@ -110,6 +110,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>) => StyleSheet.create({
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.regular,
     color: theme.colors.text.tertiary,
+    paddingVertical: 2,
   },
   detailValue: {
     fontSize: theme.typography.sizes.sm,

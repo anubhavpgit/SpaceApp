@@ -194,16 +194,23 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
     return `${CacheKeys.dashboard(location.latitude, location.longitude)}_${persona}`;
   }, [location.latitude, location.longitude, location.isLoading, persona]);
 
+  // Track API call count for debugging
+  const apiCallCountRef = useRef(0);
+
   // Fetcher function that integrates with cache manager
   const fetcher = async () => {
     if (!location.latitude || !location.longitude) {
       throw new Error('Location not available');
     }
 
-    console.log('[useSwrDashboard] Fetching dashboard data for:', {
+    apiCallCountRef.current += 1;
+    const callNumber = apiCallCountRef.current;
+
+    console.log(`[useSwrDashboard] 🌐 API CALL #${callNumber} - Fetching dashboard data for:`, {
       lat: location.latitude,
       lon: location.longitude,
       persona,
+      cacheKey,
     });
 
     // Fetch fresh data from API with persona
@@ -229,6 +236,7 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
     // Cache the fresh data in L2 (AsyncStorage) for persistence
     if (cacheKey) {
       await cacheManager.set(cacheKey, dashboardData);
+      console.log(`[useSwrDashboard] ✅ API CALL #${callNumber} - Data cached successfully`);
     }
 
     return dashboardData;
@@ -236,35 +244,48 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
 
   // Load initial data from L2 cache (AsyncStorage) for instant display
   const [fallbackData, setFallbackData] = useState<DashboardData | undefined>();
-  const [shouldRevalidate, setShouldRevalidate] = useState(true);
+  const [shouldRevalidate, setShouldRevalidate] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (cacheKey) {
+    if (cacheKey && !isInitialized) {
+      console.log('[useSwrDashboard] 🔍 Initializing cache check for:', cacheKey);
+
       // Load cached data and check its age
       Promise.all([
         cacheManager.get<DashboardData>(cacheKey),
         cacheManager.getCacheAge(cacheKey)
       ]).then(([cached, cacheAge]) => {
         if (cached) {
-          console.log('[useSwrDashboard] Loaded fallback data from L2 cache');
+          console.log('[useSwrDashboard] 💾 Cache HIT - Loaded fallback data from L2 cache');
           setFallbackData(cached);
 
           // Only revalidate if cache is older than 5 minutes
           if (cacheAge !== undefined) {
             const isStale = cacheAge > CACHE_INVALIDATION_THRESHOLD;
-            console.log('[useSwrDashboard] Cache age:', Math.round(cacheAge / 1000), 'seconds, isStale:', isStale);
+            const ageInSeconds = Math.round(cacheAge / 1000);
+            console.log(
+              `[useSwrDashboard] ⏱️  Cache age: ${ageInSeconds}s (threshold: 300s), ` +
+              `isStale: ${isStale}, willRevalidate: ${isStale}`
+            );
             setShouldRevalidate(isStale);
+          } else {
+            console.log('[useSwrDashboard] ⚠️  Cache age unknown, will revalidate');
+            setShouldRevalidate(true);
           }
         } else {
+          console.log('[useSwrDashboard] ❌ Cache MISS - No cache found, will fetch fresh data');
           setShouldRevalidate(true);
         }
+        setIsInitialized(true);
       });
     }
-  }, [cacheKey]);
+  }, [cacheKey, isInitialized]);
 
   // Use SWR with the generated cache key
   const { data, error, isValidating, mutate } = useSWR<DashboardData, Error>(
-    cacheKey,
+    // Only enable SWR after we've checked the cache
+    isInitialized ? cacheKey : null,
     fetcher,
     {
       // Use fallback data from AsyncStorage for instant display
@@ -281,6 +302,7 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
       refreshInterval: CACHE_INVALIDATION_THRESHOLD,
 
       // Deduplicate requests within 2 seconds - prevents duplicate calls
+      // This is crucial for preventing race conditions
       dedupingInterval: 2000,
 
       // Error retry configuration
@@ -296,44 +318,38 @@ export const useSwrDashboard = (): UseSwrDashboardReturn => {
       // Optimize for mobile
       loadingTimeout: 10000,
 
-      // Update shouldRevalidate after successful fetch
+      // Log successful fetches
       onSuccess: (newData) => {
-        setShouldRevalidate(false);
-        // Reset to true after cache invalidation threshold
-        setTimeout(() => setShouldRevalidate(true), CACHE_INVALIDATION_THRESHOLD);
+        console.log('[useSwrDashboard] ✅ Data fetched and updated successfully');
+      },
+
+      // Log when validation starts
+      onLoadingSlow: () => {
+        console.log('[useSwrDashboard] ⚠️  Request is taking longer than expected');
+      },
+
+      // Log errors
+      onError: (err) => {
+        console.error('[useSwrDashboard] ❌ Error fetching data:', err.message);
       },
     }
   );
 
   const loading = !data && !error;
 
+  // Log validation state changes
+  useEffect(() => {
+    if (isValidating) {
+      console.log('[useSwrDashboard] 🔄 SWR is validating/fetching data...');
+    } else {
+      console.log('[useSwrDashboard] ⏸️  SWR validation complete');
+    }
+  }, [isValidating]);
+
   // Track last update time
   const lastUpdated = useMemo(() => {
     return data ? new Date() : null;
   }, [data]);
-
-  // Background refresh mechanism - check cache age every minute and refresh if needed
-  useEffect(() => {
-    if (!cacheKey) return;
-
-    const checkAndRefresh = async () => {
-      const isStale = await cacheManager.isCacheStale(cacheKey, CACHE_INVALIDATION_THRESHOLD);
-
-      if (isStale) {
-        console.log('[useSwrDashboard] Cache is stale, triggering background refresh');
-        setShouldRevalidate(true);
-        await mutate();
-      }
-    };
-
-    // Check immediately on mount
-    checkAndRefresh();
-
-    // Then check every minute
-    const intervalId = setInterval(checkAndRefresh, 60 * 1000);
-
-    return () => clearInterval(intervalId);
-  }, [cacheKey, mutate]);
 
   return {
     data,
