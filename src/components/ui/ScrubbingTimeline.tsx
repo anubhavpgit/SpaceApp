@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { Text } from './Text';
 import { ForecastItem } from '../../types/airQuality';
-import { getAQIColor } from '../../constants/aqi';
+import { getAQIChartColor } from '../../constants/aqi';
 import { useTheme } from '../../hooks/useTheme';
 
 interface ScrubbingTimelineProps {
@@ -61,7 +61,7 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
   ).current;
 
   const selectedForecast = forecasts[selectedIndex];
-  const color = getAQIColor(selectedForecast.category);
+  const color = getAQIChartColor(selectedForecast.category);
   const styles = createStyles(theme);
 
   return (
@@ -97,7 +97,7 @@ export const ScrubbingTimeline: React.FC<ScrubbingTimelineProps> = ({
         <View style={styles.barsContainer}>
           {forecasts.map((forecast, index) => {
             const height = (forecast.aqi / 500) * 100;
-            const barColor = getAQIColor(forecast.category);
+            const barColor = getAQIChartColor(forecast.category);
             const isSelected = index === selectedIndex;
 
             return (

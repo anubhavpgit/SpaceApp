@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Text } from '../ui/Text';
 import { Card, CardContent } from '../ui/Card';
 import { AQIReading } from '../../types/airQuality';
-import { getAQIColor } from '../../constants/aqi';
+import { getAQIChartColor } from '../../constants/aqi';
 import { useTheme } from '../../hooks/useTheme';
 
 interface AISummary {
@@ -60,7 +60,7 @@ export const HistoricalTrendCard: React.FC<HistoricalTrendCardProps> = ({
           <View style={styles.chartContainer}>
             {normalizedData.map((height, index) => {
               const reading = readings[index];
-              const color = getAQIColor(reading.category);
+              const color = getAQIChartColor(reading.category);
 
               return (
                 <View key={index} style={styles.barContainer}>

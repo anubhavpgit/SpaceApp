@@ -7,7 +7,7 @@ import { useLocation } from '../contexts/LocationContext';
 import { airQualityAPI } from '../api/client';
 import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
-import { getAQIColor } from '../constants/aqi';
+import { getAQIChartColor } from '../constants/aqi';
 import { AQIReading } from '../types/airQuality';
 
 interface AISummary {
@@ -243,7 +243,7 @@ export default function HistoricalDetailScreen() {
               <View style={styles.chart}>
                 {normalizedData.map((height, index) => {
                   const reading = readings[index];
-                  const color = getAQIColor(reading.category);
+                  const color = getAQIChartColor(reading.category);
 
                   return (
                     <View key={index} style={styles.barContainer}>

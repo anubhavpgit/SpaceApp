@@ -66,6 +66,16 @@ export const AQI_LEVEL_COLORS = {
   hazardous: PASTEL_COLORS.mauve,     // 301+: Pastel mauve
 } as const;
 
+// AQI Chart Colors (More saturated for better visibility in charts)
+export const AQI_CHART_COLORS = {
+  good: '#4CAF50',          // 0-50: Vibrant green
+  moderate: '#FFC107',      // 51-100: Vibrant yellow/amber
+  unhealthySensitive: '#FF9800',  // 101-150: Vibrant orange
+  unhealthy: '#F44336',     // 151-200: Vibrant red
+  veryUnhealthy: '#9C27B0',    // 201-300: Vibrant purple
+  hazardous: '#6D4C41',     // 301+: Dark brown
+} as const;
+
 // Accent Colors (for UI elements)
 export const ACCENT_COLORS = {
   primary: PASTEL_COLORS.pink,

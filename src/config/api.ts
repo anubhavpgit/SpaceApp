@@ -8,13 +8,13 @@ const ENV = __DEV__ ? 'development' : 'production';
 // TODO: Update these URLs to match your deployment
 const API_URLS = {
   development: 'https://anubhav.ngrok.app',
-  production: 'https://api.airquality.app',
+  production: 'https://spacelighthouse.up.railway.app',
 };
 
 // TODO: In production, store this securely using react-native-keychain
 const API_KEYS = {
   development: 'clearskies_dev_key_2025',
-  production: 'your-production-api-key',
+  production: 'clearskies_dev_key_2025',
 };
 
 export const API_CONFIG = {

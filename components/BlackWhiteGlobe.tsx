@@ -46,6 +46,13 @@ function GlobeScene({ rotation, zoom, onTap }: GlobeSceneProps) {
     }
   }, [rotation, invalidate]);
 
+  // // Auto-rotate globe continuously
+  // useFrame(() => {
+  //   if (groupRef.current) {
+  //     groupRef.current.rotation.y += 0.002; // Slow continuous rotation
+  //   }
+  // });
+
   // PRE-COMPUTED DOTS: Load instantly from JSON (NO COMPUTATION!)
   const { dotGeometry, dotMaterial, instanceCount } = useMemo(() => {
     const startTime = Date.now();
@@ -251,14 +258,14 @@ export default function BlackWhiteGlobe({ onLocationSelect }: BlackWhiteGlobePro
           // Land location
           const address = data.address;
           const city = address.city ||
-                       address.town ||
-                       address.village ||
-                       address.county ||
-                       address.state_district ||
-                       address.state ||
-                       address.region ||
-                       address.country ||
-                       'Unknown Location';
+            address.town ||
+            address.village ||
+            address.county ||
+            address.state_district ||
+            address.state ||
+            address.region ||
+            address.country ||
+            'Unknown Location';
 
           const country = address.country || '';
           const state = address.state || '';
@@ -347,7 +354,7 @@ export default function BlackWhiteGlobe({ onLocationSelect }: BlackWhiteGlobePro
       <View style={[styles.container, { backgroundColor }]}>
         <Canvas
           camera={{ position: [0, 0, 6], fov: 45 }}
-          frameloop="demand" // On-demand rendering for performance
+          frameloop="always" // Always render for continuous rotation
           dpr={[1, 2]} // Device pixel ratio optimization
           gl={{
             alpha: false,

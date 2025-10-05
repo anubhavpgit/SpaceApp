@@ -1,5 +1,5 @@
 import { AQICategory } from '../types/airQuality';
-import { AQI_LEVEL_COLORS, AQI_BG_COLORS as AQI_BACKGROUND_COLORS } from './colors';
+import { AQI_LEVEL_COLORS, AQI_CHART_COLORS, AQI_BG_COLORS as AQI_BACKGROUND_COLORS } from './colors';
 
 export const AQI_RANGES = {
   good: { min: 0, max: 50 },
@@ -107,6 +107,18 @@ export function getAQICategory(aqi: number): AQICategory {
 
 export function getAQIColor(category: AQICategory): string {
   return AQI_COLORS[category];
+}
+
+export function getAQIChartColor(category: AQICategory): string {
+  const chartColors = {
+    good: AQI_CHART_COLORS.good,
+    moderate: AQI_CHART_COLORS.moderate,
+    'unhealthy-sensitive': AQI_CHART_COLORS.unhealthySensitive,
+    unhealthy: AQI_CHART_COLORS.unhealthy,
+    'very-unhealthy': AQI_CHART_COLORS.veryUnhealthy,
+    hazardous: AQI_CHART_COLORS.hazardous,
+  };
+  return chartColors[category];
 }
 
 export function getAQILabel(category: AQICategory): string {

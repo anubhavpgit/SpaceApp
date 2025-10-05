@@ -5,7 +5,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from '../hooks/useTheme';
 import { Text } from '../components/ui/Text';
 import { Card, CardContent } from '../components/ui/Card';
-import { getAQIColor } from '../constants/aqi';
+import { getAQIChartColor } from '../constants/aqi';
 
 interface AISummary {
   brief: string;
@@ -92,7 +92,7 @@ export default function ForecastDetailScreen() {
         {/* Hourly Breakdown */}
         <Text style={styles.sectionTitle}>HOURLY BREAKDOWN</Text>
         {forecasts.map((forecast, index) => {
-          const color = getAQIColor(forecast.category);
+          const color = getAQIChartColor(forecast.category);
 
           return (
             <Card key={index} variant="elevated" style={styles.forecastCard}>

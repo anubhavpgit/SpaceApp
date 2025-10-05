@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Card, CardHeader, CardContent } from '../ui/Card';
 import { ForecastItem } from '../../types/airQuality';
-import { getAQIColor } from '../../constants/aqi';
+import { getAQIChartColor } from '../../constants/aqi';
 import { theme } from '../../constants/theme';
 
 interface ForecastCardProps {
@@ -33,7 +33,7 @@ export const ForecastCard: React.FC<ForecastCardProps> = ({
           scrollEventThrottle={16}
         >
           {hourlyForecasts.map((forecast, index) => {
-            const color = getAQIColor(forecast.category);
+            const color = getAQIChartColor(forecast.category);
             const time = new Date(forecast.timestamp).toLocaleTimeString([], {
               hour: 'numeric',
             });
