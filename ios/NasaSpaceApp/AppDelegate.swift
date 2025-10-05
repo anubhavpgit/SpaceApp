@@ -27,7 +27,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "NasaSpaceApp",
+      withModuleName: "LightHouse",
       in: window,
       launchOptions: launchOptions
     )
